@@ -1,0 +1,131 @@
+{
+  "_version": "1.89.0",
+  "sap.app": {
+    "id": "vpamasterapproval",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:basic",
+      "version": "1.33.0",
+      "toolsId": "134029dc-aec6-409b-8689-399582e2fd17"
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "/odata/v4/master/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "localUri": "localService/mainService/metadata.xml",
+          "odataVersion": "4.0"
+        }
+      }
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "VPAMasterApproval-display": {
+          "semanticObject": "VPAMasterApproval",
+          "action": "display",
+          "title": "{{VPAMasterApproval-display.flpTitle}}",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.153.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "vpamasterapproval.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "controlAggregation": "pages",
+        "controlId": "app",
+        "transition": "slide",
+        "type": "View",
+        "viewType": "XML",
+        "path": "vpamasterapproval.view",
+        "async": true,
+        "viewPath": "vpamasterapproval.view"
+      },
+      "routes": [
+        {
+          "name": "RoutemasterApproval",
+          "pattern": ":?query:",
+          "target": [
+            "TargetmasterApproval"
+          ]
+        }
+      ],
+      "targets": {
+        "TargetmasterApproval": {
+          "id": "masterApproval",
+          "name": "masterApproval"
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "vpamasterapproval.view.App",
+      "type": "XML",
+      "id": "App",
+      "async": true
+    }
+  }
+}

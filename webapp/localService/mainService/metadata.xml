@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+    <edmx:Reference Uri="https://sap.github.io/odata-vocabularies/vocabularies/Common.xml">
+        <edmx:Include Alias="Common" Namespace="com.sap.vocabularies.Common.v1"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://oasis-tcs.github.io/odata-vocabularies/vocabularies/Org.OData.Core.V1.xml">
+        <edmx:Include Alias="Core" Namespace="Org.OData.Core.V1"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://oasis-tcs.github.io/odata-vocabularies/vocabularies/Org.OData.Validation.V1.xml">
+        <edmx:Include Alias="Validation" Namespace="Org.OData.Validation.V1"/>
+    </edmx:Reference>
+    <edmx:DataServices>
+        <Schema Namespace="MasterService" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+            <Annotation Term="Core.Links">
+                <Collection>
+                    <Record>
+                        <PropertyValue Property="rel" String="author"/>
+                        <PropertyValue Property="href" String="https://cap.cloud.sap"/>
+                    </Record>
+                </Collection>
+            </Annotation>
+            <EntityContainer Name="EntityContainer">
+                <EntitySet Name="Regions" EntityType="MasterService.Regions"/>
+                <EntitySet Name="Models" EntityType="MasterService.Models"/>
+                <EntitySet Name="PricingComponents" EntityType="MasterService.PricingComponents"/>
+                <EntitySet Name="RTOMasters" EntityType="MasterService.RTOMasters">
+                    <NavigationPropertyBinding Path="region" Target="Regions"/>
+                </EntitySet>
+                <EntitySet Name="RTOExpense" EntityType="MasterService.RTOExpense">
+                    <NavigationPropertyBinding Path="region" Target="Regions"/>
+                </EntitySet>
+                <EntitySet Name="Parts" EntityType="MasterService.Parts"/>
+                <EntitySet Name="MTOConfigurations" EntityType="MasterService.MTOConfigurations">
+                    <NavigationPropertyBinding Path="referenceMTSModel" Target="Models"/>
+                    <NavigationPropertyBinding Path="parts" Target="MTOConfigurationParts"/>
+                </EntitySet>
+                <EntitySet Name="MTOConfigurationParts" EntityType="MasterService.MTOConfigurationParts">
+                    <NavigationPropertyBinding Path="configuration" Target="MTOConfigurations"/>
+                    <NavigationPropertyBinding Path="part" Target="Parts"/>
+                </EntitySet>
+            </EntityContainer>
+            <EntityType Name="Regions">
+                <Key>
+                    <PropertyRef Name="regionCode"/>
+                </Key>
+                <Property Name="regionCode" Type="Edm.String" MaxLength="10" Nullable="false"/>
+                <Property Name="regionName" Type="Edm.String" MaxLength="100"/>
+                <Property Name="rtoBasis" Type="Edm.String" MaxLength="20"/>
+                <Property Name="status" Type="Edm.String"/>
+            </EntityType>
+            <EntityType Name="Models">
+                <Key>
+                    <PropertyRef Name="modelCode"/>
+                </Key>
+                <Property Name="modelCode" Type="Edm.String" MaxLength="40" Nullable="false"/>
+                <Property Name="validFrom" Type="Edm.Date"/>
+                <Property Name="orderType" Type="Edm.String"/>
+                <Property Name="modelDescription" Type="Edm.String" MaxLength="200"/>
+                <Property Name="engineType" Type="Edm.String" DefaultValue="Petrol"/>
+                <Property Name="ccWatt" Type="Edm.Decimal" Precision="10" Scale="2"/>
+                <Property Name="gstPercent" Type="Edm.Decimal" Precision="5" Scale="2"/>
+                <Property Name="dealerMarginPercent" Type="Edm.Decimal" Precision="5" Scale="2"/>
+                <Property Name="csdDiscountPercent" Type="Edm.Decimal" Precision="5" Scale="2"/>
+                <Property Name="csdGstPercent" Type="Edm.Decimal" Precision="5" Scale="2"/>
+                <Property Name="gemValue" Type="Edm.Decimal" Precision="15" Scale="2"/>
+                <Property Name="status" Type="Edm.String" DefaultValue="ACTIVE"/>
+                <Property Name="approvalStatus" Type="Edm.String" DefaultValue="DRAFT"/>
+            </EntityType>
+            <EntityType Name="PricingComponents">
+                <Key>
+                    <PropertyRef Name="regionCode"/>
+                    <PropertyRef Name="engineType"/>
+                </Key>
+                <Property Name="regionCode" Type="Edm.String" MaxLength="10" Nullable="false"/>
+                <Property Name="engineType" Type="Edm.String" Nullable="false" DefaultValue="Petrol"/>
+                <Property Name="validFrom" Type="Edm.Date"/>
+                <Property Name="helmet" Type="Edm.Decimal" Precision="15" Scale="2"/>
+                <Property Name="transportation" Type="Edm.Decimal" Precision="15" Scale="2"/>
+                <Property Name="helmetMargin" Type="Edm.Decimal" Precision="15" Scale="2"/>
+                <Property Name="otherExpensesBelow500" Type="Edm.Decimal" Precision="15" Scale="2"/>
+                <Property Name="otherExpensesAbove500" Type="Edm.Decimal" Precision="15" Scale="2"/>
+                <Property Name="insuranceRateBelow350" Type="Edm.Decimal" Precision="7" Scale="4"/>
+                <Property Name="insuranceRateAbove350" Type="Edm.Decimal" Precision="7" Scale="4"/>
+                <Property Name="tpaPaBelow350" Type="Edm.Decimal" Precision="15" Scale="2"/>
+                <Property Name="tpaPaAbove350" Type="Edm.Decimal" Precision="15" Scale="2"/>
+                <Property Name="noPlateCharges" Type="Edm.Decimal" Precision="15" Scale="2"/>
+                <Property Name="approvalStatus" Type="Edm.String" DefaultValue="DRAFT"/>
+            </EntityType>
+            <EntityType Name="RTOMasters">
+                <Key>
+                    <PropertyRef Name="id"/>
+                </Key>
+                <Property Name="id" Type="Edm.Guid" Nullable="false"/>
+                <NavigationProperty Name="region" Type="MasterService.Regions">
+                    <ReferentialConstraint Property="region_regionCode" ReferencedProperty="regionCode"/>
+                </NavigationProperty>
+                <Property Name="region_regionCode" Type="Edm.String" MaxLength="10"/>
+                <Property Name="validFrom" Type="Edm.Date"/>
+                <Property Name="slab" Type="Edm.Int32"/>
+                <Property Name="engineType" Type="Edm.String" DefaultValue="Petrol"/>
+                <Property Name="ccMin" Type="Edm.Decimal" Precision="10" Scale="2"/>
+                <Property Name="ccMax" Type="Edm.Decimal" Precision="10" Scale="2"/>
+                <Property Name="minimumPrice" Type="Edm.Decimal" Precision="15" Scale="2"/>
+                <Property Name="maximumPrice" Type="Edm.Decimal" Precision="15" Scale="2"/>
+                <Property Name="rtoPercent" Type="Edm.Decimal" Precision="7" Scale="4"/>
+                <Property Name="flatPriceValue" Type="Edm.Decimal" Precision="15" Scale="2"/>
+                <Property Name="approvalStatus" Type="Edm.String" DefaultValue="DRAFT"/>
+            </EntityType>
+            <EntityType Name="RTOExpense">
+                <Key>
+                    <PropertyRef Name="id"/>
+                </Key>
+                <Property Name="id" Type="Edm.Guid" Nullable="false"/>
+                <NavigationProperty Name="region" Type="MasterService.Regions">
+                    <ReferentialConstraint Property="region_regionCode" ReferencedProperty="regionCode"/>
+                </NavigationProperty>
+                <Property Name="region_regionCode" Type="Edm.String" MaxLength="10"/>
+                <Property Name="slab" Type="Edm.Int32"/>
+                <Property Name="engineType" Type="Edm.String" DefaultValue="Petrol"/>
+                <Property Name="minimumPrice" Type="Edm.Decimal" Precision="15" Scale="2"/>
+                <Property Name="maximumPrice" Type="Edm.Decimal" Precision="15" Scale="2"/>
+                <Property Name="percentage" Type="Edm.Decimal" Precision="7" Scale="4"/>
+                <Property Name="fixedAmount" Type="Edm.Decimal" Precision="15" Scale="2"/>
+                <Property Name="approvalStatus" Type="Edm.String" DefaultValue="DRAFT"/>
+            </EntityType>
+            <EntityType Name="Parts">
+                <Key>
+                    <PropertyRef Name="partCode"/>
+                </Key>
+                <Property Name="partCode" Type="Edm.String" MaxLength="50" Nullable="false"/>
+                <Property Name="validFrom" Type="Edm.Date"/>
+                <Property Name="description" Type="Edm.String" MaxLength="200"/>
+                <Property Name="miyCost" Type="Edm.Decimal" Precision="15" Scale="2"/>
+                <Property Name="miyMarkup" Type="Edm.Decimal" Precision="15" Scale="2"/>
+                <Property Name="priceIndicator" Type="Edm.String" MaxLength="20"/>
+            </EntityType>
+            <EntityType Name="MTOConfigurations">
+                <Key>
+                    <PropertyRef Name="mtoModelCode"/>
+                </Key>
+                <Property Name="mtoModelCode" Type="Edm.String" MaxLength="40" Nullable="false"/>
+                <Property Name="validFrom" Type="Edm.Date"/>
+                <NavigationProperty Name="referenceMTSModel" Type="MasterService.Models">
+                    <ReferentialConstraint Property="referenceMTSModel_modelCode" ReferencedProperty="modelCode"/>
+                </NavigationProperty>
+                <Property Name="referenceMTSModel_modelCode" Type="Edm.String" MaxLength="40"/>
+                <NavigationProperty Name="parts" Type="Collection(MasterService.MTOConfigurationParts)" Partner="configuration">
+                    <OnDelete Action="Cascade"/>
+                </NavigationProperty>
+            </EntityType>
+            <EntityType Name="MTOConfigurationParts">
+                <Key>
+                    <PropertyRef Name="partNo"/>
+                </Key>
+                <Property Name="partNo" Type="Edm.Int32" Nullable="false"/>
+                <NavigationProperty Name="configuration" Type="MasterService.MTOConfigurations" Partner="parts">
+                    <ReferentialConstraint Property="configuration_mtoModelCode" ReferencedProperty="mtoModelCode"/>
+                </NavigationProperty>
+                <Property Name="configuration_mtoModelCode" Type="Edm.String" MaxLength="40"/>
+                <NavigationProperty Name="part" Type="MasterService.Parts">
+                    <ReferentialConstraint Property="part_partCode" ReferencedProperty="partCode"/>
+                </NavigationProperty>
+                <Property Name="part_partCode" Type="Edm.String" MaxLength="50"/>
+                <Property Name="quantity" Type="Edm.Int32"/>
+            </EntityType>
+            <Annotations Target="MasterService.Regions/status">
+                <Annotation Term="Validation.AllowedValues">
+                    <Collection>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="DRAFT"/>
+                            <PropertyValue Property="Value" String="DRAFT"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="SUBMITTED"/>
+                            <PropertyValue Property="Value" String="SUBMITTED"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="APPROVED"/>
+                            <PropertyValue Property="Value" String="APPROVED"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="REJECTED"/>
+                            <PropertyValue Property="Value" String="REJECTED"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="MasterService.Models/orderType">
+                <Annotation Term="Validation.AllowedValues">
+                    <Collection>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="MTO"/>
+                            <PropertyValue Property="Value" String="MTO"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="MTS"/>
+                            <PropertyValue Property="Value" String="MTS"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="MasterService.Models/engineType">
+                <Annotation Term="Validation.AllowedValues">
+                    <Collection>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="Petrol"/>
+                            <PropertyValue Property="Value" String="Petrol"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="EV"/>
+                            <PropertyValue Property="Value" String="EV"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="MasterService.Models/status">
+                <Annotation Term="Validation.AllowedValues">
+                    <Collection>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="ACTIVE"/>
+                            <PropertyValue Property="Value" String="ACTIVE"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="INACTIVE"/>
+                            <PropertyValue Property="Value" String="INACTIVE"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="MasterService.Models/approvalStatus">
+                <Annotation Term="Validation.AllowedValues">
+                    <Collection>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="DRAFT"/>
+                            <PropertyValue Property="Value" String="DRAFT"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="SUBMITTED"/>
+                            <PropertyValue Property="Value" String="SUBMITTED"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="APPROVED"/>
+                            <PropertyValue Property="Value" String="APPROVED"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="REJECTED"/>
+                            <PropertyValue Property="Value" String="REJECTED"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="MasterService.PricingComponents/engineType">
+                <Annotation Term="Validation.AllowedValues">
+                    <Collection>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="Petrol"/>
+                            <PropertyValue Property="Value" String="Petrol"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="EV"/>
+                            <PropertyValue Property="Value" String="EV"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="MasterService.PricingComponents/approvalStatus">
+                <Annotation Term="Validation.AllowedValues">
+                    <Collection>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="DRAFT"/>
+                            <PropertyValue Property="Value" String="DRAFT"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="SUBMITTED"/>
+                            <PropertyValue Property="Value" String="SUBMITTED"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="APPROVED"/>
+                            <PropertyValue Property="Value" String="APPROVED"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="REJECTED"/>
+                            <PropertyValue Property="Value" String="REJECTED"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="MasterService.RTOMasters/id">
+                <Annotation Term="Core.ComputedDefaultValue" Bool="true"/>
+            </Annotations>
+            <Annotations Target="MasterService.RTOMasters/engineType">
+                <Annotation Term="Validation.AllowedValues">
+                    <Collection>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="Petrol"/>
+                            <PropertyValue Property="Value" String="Petrol"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="EV"/>
+                            <PropertyValue Property="Value" String="EV"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="MasterService.RTOMasters/approvalStatus">
+                <Annotation Term="Validation.AllowedValues">
+                    <Collection>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="DRAFT"/>
+                            <PropertyValue Property="Value" String="DRAFT"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="SUBMITTED"/>
+                            <PropertyValue Property="Value" String="SUBMITTED"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="APPROVED"/>
+                            <PropertyValue Property="Value" String="APPROVED"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="REJECTED"/>
+                            <PropertyValue Property="Value" String="REJECTED"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="MasterService.RTOExpense/id">
+                <Annotation Term="Core.ComputedDefaultValue" Bool="true"/>
+            </Annotations>
+            <Annotations Target="MasterService.RTOExpense/engineType">
+                <Annotation Term="Validation.AllowedValues">
+                    <Collection>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="Petrol"/>
+                            <PropertyValue Property="Value" String="Petrol"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="EV"/>
+                            <PropertyValue Property="Value" String="EV"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <Annotations Target="MasterService.RTOExpense/approvalStatus">
+                <Annotation Term="Validation.AllowedValues">
+                    <Collection>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="DRAFT"/>
+                            <PropertyValue Property="Value" String="DRAFT"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="SUBMITTED"/>
+                            <PropertyValue Property="Value" String="SUBMITTED"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="APPROVED"/>
+                            <PropertyValue Property="Value" String="APPROVED"/>
+                        </Record>
+                        <Record Type="Validation.AllowedValue">
+                            <Annotation Term="Core.SymbolicName" String="REJECTED"/>
+                            <PropertyValue Property="Value" String="REJECTED"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>
