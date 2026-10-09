@@ -1,6 +1,77 @@
 <mvc:View controllerName="vpamasterapproval.controller.masterApproval"
     xmlns:mvc="sap.ui.core.mvc"
-    xmlns="sap.m">
-    <Page id="page" title="{i18n>title}">
-    </Page>
+    xmlns="sap.m"
+    xmlns:tnt="sap.tnt">
+
+    <tnt:ToolPage id="approvalToolPage">
+
+    <tnt:header >
+
+    <tnt:ToolHeader id="toolheader">
+
+    <Button id="button" icon="sap-icon://menu2" type="Transparent" press=".onMenuPress"/>
+
+    <Image id="saplogo" src="images/download.png" width="50px"/>
+
+    <Title id="apptitle" text="Master Data Approval"/>
+
+    <ToolbarSpacer id="toolbar"/>
+
+    <SearchField id="globalSearch" width="280px" placeholder="Search in approval ...."/>
+
+    <Avatar id="userAvatar" initials="VP"/>
+
+
+    
+    </tnt:ToolHeader>
+    
+    </tnt:header>
+
+
+     <tnt:sideContent>
+
+     <tnt:SideNavigation id="navigation">
+
+
+     <tnt:NavigationList id="navigationList"  itemSelect=".onNavigationSelect"> 
+
+       <tnt:NavigationListItem id="Home" text="Home"  icon="sap-icon://home" key="home"/>
+
+        <tnt:NavigationListItem id="modelmaster" text="Model Master" icon="sap-icon://car-rental"  key="model"/>
+
+        <tnt:NavigationListItem id="regionmaster" text="Region Master"  icon="sap-icon://map"       key="region"/>
+
+        <tnt:NavigationListItem id="gstmaster" text="PricingComponents" icon="sap-icon://sales-document"  key="pricing"/>
+ 
+        <tnt:NavigationListItem id="rtomaster" text="RTO Master" icon="sap-icon://building"  key="rto"/>
+
+        <tnt:NavigationListItem id="insurancemaster" text="RTO Expense" icon="sap-icon://shield"  key="rtoexpense"/>
+
+        <tnt:NavigationListItem id="transportmaster" text="Parts" icon="sap-icon://shipping-status"  key="parts"/>
+
+       <tnt:NavigationListItem id="otherexpensemaster"  text="MTOConfigurations" icon="sap-icon://database"  key="mto"/>
+
+
+     
+     </tnt:NavigationList>
+     
+     
+     </tnt:SideNavigation>
+
+
+        </tnt:sideContent>
+
+
+        <tnt:mainContents >
+
+        <NavContainer id="mainNavContainer" width="100%" height="100%" />
+        
+        
+        </tnt:mainContents>
+
+
+
+    </tnt:ToolPage>
+
+
 </mvc:View>

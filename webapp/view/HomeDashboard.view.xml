@@ -1,0 +1,87 @@
+<mvc:View
+controllerName="vpamasterapproval.controller.HomeDashboard"
+xmlns:mvc="sap.ui.core.mvc"
+xmlns="sap.m"
+xmlns:core="sap.ui.core"
+xmlns:layout="sap.ui.layout">
+
+
+<Page id="homedashboard" showHeader="false" enableScrolling="true">
+
+<content>
+    <VBox id="homevbox" width="100%" class="homeDashboard sapUiResponsiveContentPadding">
+
+        <HBox id="box" width="100%" alignItems="Center" justifyContent="SpaceBetween" class="dashboardBanner sapUiSmallMarginBottom">
+
+            <VBox id="bannerTextBox">
+
+                <Text id="text" text="WELCOME TO VEHICLE PRICING AUTOMATION" class="bannerSubtitle"/>
+                <Title id="tilte" text="Master Data Approval" level="H2" class="bannerTitle"/>
+                <Title id="mastetile" text="Manage vehicle master data, pricing and configurations in one place." level="H4"/>
+                <Title id="date" class="bannerDate" level="H6"/>
+            </VBox>
+
+            <Image  id="bannerCarImage" src="images/goan-classic-350.avif" alt="Royal Enfield Classic 350"  decorative="false" densityAware="false"  width="280px"  height="120px" class="bannerCarImage"/>
+
+        </HBox>
+
+     <VBox id="pagetitlecontainer" width="100%" class="pageTitleContainer">
+
+    <Title id="pageTitle" text="Model Master" level="H3" class="pageTitle"/>
+
+
+
+
+    <Text id="pagesubtitle" text="Manage and maintain vehicle model master data"  class="pageSubtitle"/>
+    
+    </VBox>
+
+  <HBox id="summaryCards" wrap="Wrap" class="summaryCards">
+    <GenericTile id="modelMasterTile" header="Model Master" subheader="Vehicle models" class="summaryTile tileBlue">
+        <TileContent id="modelMasterContent">
+            <NumericContent id="modelMasterNumeric" value="128" icon="sap-icon://car-rental" valueColor="Neutral"/>
+        </TileContent>
+    </GenericTile>
+    <GenericTile id="regionMasterTile" header="Region Master" subheader="Configured regions" class="summaryTile tileGreen">
+        <TileContent id="regionMasterContent">
+            <NumericContent id="regionMasterNumeric" value="12" icon="sap-icon://map" valueColor="Neutral"/>
+        </TileContent>
+    </GenericTile>
+    <GenericTile id="pricingComponentsTile" header="Pricing Components" subheader="Pricing records" class="summaryTile tilePurple">
+        <TileContent id="pricingComponentsContent">
+            <NumericContent id="pricingComponentsNumeric" value="24" icon="sap-icon://sales-document" valueColor="Neutral"/>
+        </TileContent>
+    </GenericTile>
+    <GenericTile id="rtoMasterTile" header="RTO Master" subheader="RTO records" class="summaryTile tileOrange">
+        <TileContent id="rtoMasterContent">
+            <NumericContent id="rtoMasterNumeric" value="15" icon="sap-icon://building" valueColor="Neutral"/>
+        </TileContent>
+    </GenericTile>
+    <GenericTile id="rtoExpenseTile" header="RTO Expense" subheader="Expense records" class="summaryTile tileRed">
+        <TileContent id="rtoExpenseContent">
+            <NumericContent id="rtoExpenseNumeric" value="10" icon="sap-icon://shield" valueColor="Neutral"/>
+        </TileContent>
+    </GenericTile>
+    <GenericTile id="partsTile" header="Parts" subheader="Parts records" class="summaryTile tileCyan">
+        <TileContent id="partsContent">
+            <NumericContent id="partsNumeric" value="36" icon="sap-icon://shipping-status" valueColor="Neutral"/>
+        </TileContent>
+    </GenericTile>
+    <GenericTile id="mtoConfigurationsTile" header="MTO Configurations" subheader="Configuration records" class="summaryTile tileNavy">
+        <TileContent id="mtoConfigurationsContent">
+            <NumericContent id="mtoConfigurationsNumeric" value="7" icon="sap-icon://database" valueColor="Neutral"/>
+        </TileContent>
+    </GenericTile>
+</HBox>
+
+    </VBox>
+
+
+   
+
+</content>
+
+</Page>
+
+
+</mvc:View>
