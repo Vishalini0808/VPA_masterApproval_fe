@@ -1,1 +1,246 @@
 /* Enter your custom styles here */
+
+.modelMasterToolbar {
+    width: 100%;
+    background: #ffffff;
+    border: none;
+    padding: 0;
+    margin-bottom: 14px;
+    box-sizing: border-box;
+    overflow: visible;
+}
+
+.modelMasterToolbar .sapMBarChild {
+    flex-shrink: 0;
+}
+
+.modelMasterToolbar .sapMBtn {
+    flex-shrink: 0;
+    min-width: 90px;
+}
+
+.modelMasterToolbar .sapMBtnInner {
+    white-space: nowrap;
+}
+.modelMasterContainer {
+    width: 100%;
+    max-width: 100%;
+    padding: 24px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    background: #ffffff;
+}
+
+.modelMasterPage {
+    background: #ffffff;
+}
+
+.modelMasterPage .sapMPageEnableScrolling {
+    overflow-x: hidden;
+}
+
+
+.homeDashboard {
+    background: #eef4fa;
+    min-height: 100%;
+}
+
+.dashboardBanner {
+    background: linear-gradient(110deg, #075bb8, #123d70);
+    padding: 2rem;
+    border-radius: 0.6rem;
+    color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 40, 90, 0.12);
+}
+
+.bannerSubtitle {
+    color: #d8eaff;
+    font-size: 0.75rem;
+    letter-spacing: 0.08rem;
+}
+
+.bannerTitle {
+    color: #ffffff !important;
+    margin-top: 0.5rem;
+}
+
+.bannerDescription {
+    color: #ffffff;
+    max-width: 40rem;
+    margin-top: 0.5rem;
+}
+
+.sectionTitle {
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+    color: #183b63;
+}
+
+.summaryCards {
+    gap: 0.75rem;
+}
+
+.summaryTile {
+    width: 15rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 5px rgba(20, 60, 100, 0.08);
+}
+
+.analyticsCards {
+    gap: 1rem;
+}
+
+.analyticsPanel {
+    flex: 1 1 24rem;
+    min-width: 20rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 5px rgba(20, 60, 100, 0.08);
+}
+
+.pageTitleContainer {
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.pageTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #17365D;
+}
+
+.pageSubtitle {
+    font-size: 0.875rem;
+    color: #64748B;
+    margin-top: 0.25rem;
+}
+
+.masterDataHeading {
+    color: #17365D !important;
+    font-size: 1.35rem !important;
+    font-weight: 700 !important;
+    margin: 0.5rem 0 0.75rem 0.5rem;
+}
+
+.masterDataGrid {
+    padding: 0 0.25rem;
+}
+
+.masterDataTile {
+    width: 100% !important;
+    max-width: 17rem;
+    height: 8.5rem !important;
+    margin: 0.25rem !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 2px 6px rgba(20, 50, 80, 0.13);
+    transition: box-shadow 0.2s ease;
+}
+
+.masterDataTile:hover {
+    box-shadow: 0 5px 12px rgba(20, 50, 80, 0.2);
+}
+
+.tileBlue {
+    border-top: 4px solid #1676D2 !important;
+}
+
+.tileTeal {
+    border-top: 4px solid #009688 !important;
+}
+
+.tilePurple {
+    border-top: 4px solid #8064C8 !important;
+}
+
+.tileOrange {
+    border-top: 4px solid #E99A32 !important;
+}
+
+.tileRed {
+    border-top: 4px solid #D9534F !important;
+}
+
+.tileNavy {
+    border-top: 4px solid #244A73 !important;
+}
+
+.tileGreen {
+    border-top: 4px solid #439B62 !important;
+}
+
+
+.summaryCards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 0.5rem;
+    align-items: stretch;
+}
+
+.summaryTile {
+    flex: 1 1 15rem;
+    min-width: 13rem;
+    max-width: 20rem;
+    height: 8rem;
+    border: 1px solid #D8E6F5;
+    border-radius: 0.75rem;
+    box-shadow: none;
+    overflow: hidden;
+}
+
+.summaryTile .sapMGTHeaderText {
+    color: #17365D;
+    font-weight: 600;
+}
+
+.summaryTile .sapMGTSubHdrTxt {
+    color: #5B789A;
+}
+
+.summaryTile .sapMNCValue {
+    font-weight: 700;
+    color: #17365D;
+}
+
+.summaryTile .sapMNCIconImage {
+    font-size: 1.5rem;
+}
+
+.tileBlue {
+    background: #F1F7FF !important;
+    border-color: #C9E0FF;
+}
+
+.tileGreen {
+    background: #F0FBF5 !important;
+    border-color: #C8EED9;
+}
+
+.tilePurple {
+    background: #F7F4FF !important;
+    border-color: #DED3FF;
+}
+
+.tileOrange {
+    background: #FFF8F0 !important;
+    border-color: #FFDFC0;
+}
+
+.tileRed {
+    background: #FFF3F5 !important;
+    border-color: #FFD5DF;
+}
+
+.tileCyan {
+    background: #EFFBFC !important;
+    border-color: #C5EEF0;
+}
+
+.tileNavy {
+    background: #F1F5FF !important;
+    border-color: #D1DCFF;
+}
+
+.tileCyan {
+    background: #EFFBFC !important;
+    border-color: #C5EEF0 !important;
+}

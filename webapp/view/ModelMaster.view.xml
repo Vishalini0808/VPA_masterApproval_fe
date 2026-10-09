@@ -1,0 +1,231 @@
+<mvc:View
+controllerName="vpamasterapproval.controller.ModelMaster"
+xmlns:mvc="sap.ui.core.mvc"
+xmlns="sap.m"
+xmlns:core="sap.ui.core">
+
+
+<Page id="page" title="Model Master" showHeader="true"  class="modelMasterPage">
+
+<content >
+
+<VBox id ="modelmastercontainer" width="100%" class="sapUiMediumMargin">
+
+<HBox id="hbox" alignItems="Center" class="sapUiSmallMarginBottom">
+
+<core:Icon id="modelMasterIcon" src="sap-icon://car-rental" size="2rem"  class="sapUiSmallMarginEnd"/>
+
+<VBox id="vbox">
+
+<Title id="modeltitle" text="Model Master" level="H2"/>
+
+<Text id="pendingCountText"  text="25 records pending for approval"/>
+
+</VBox>
+
+</HBox>
+
+<Toolbar id="modelmasterToolbar" class="modelMasterToolbar">
+
+    <SearchField id="modelSearchField" width="300px" placeholder="Search by Model Code or Description..." liveChange=".onSearch"/>
+
+    <Select id="fieldFilterSelect" width="170px">
+        <items>
+            <core:Item id="allFieldsItem" key="all" text="All Fields"/>
+            <core:Item id="modelCodeItem" key="modelCode" text="Model Code"/>
+            <core:Item id="descriptionItem" key="description" text="Description"/>
+            <core:Item id="engineTypeItem" key="engineType" text="Engine Type"/>
+        </items>
+    </Select>
+
+    <ToolbarSpacer id="toolspacer"/>
+
+    <Button id="refreshButton" text="Refresh" icon="sap-icon://refresh" type="Transparent"   press=".onRefresh"/>
+
+    <Button id="importButton" text="Import" icon="sap-icon://upload" type="Transparent"  press=".onImport"/>
+
+</Toolbar>
+
+
+<Table id="model" width="100%"    inset="false" growing="false" fixedLayout="false" class="modelMasterTable">
+
+
+
+     <columns>
+                       
+                       
+     <Column id="modelCodeColumn" width="10rem">
+
+          <Text id="modelcode" text="Model Code"/>
+
+     </Column>
+
+    <Column id="modelDescriptionColumn"  width="12rem">
+
+        <Text id="modeldesc" text="Model Description"/>
+
+    </Column>
+    
+    <Column id="engineTypeColumn"  width="9rem">
+
+       <Text id="enginetype" text="Engine Type"/>
+
+    </Column>
+    
+    <Column id="ccWattColumn" width="8rem">
+
+          <Text id="cc" text="CC / Watt"/>
+
+    </Column>
+    
+     <Column id="gstPercentColumn" width="7rem">
+
+        <Text id="gst" text="GST %"/>
+
+     </Column>
+     
+     <Column id="dealerMarginColumn" width="10rem">
+
+        <Text id="dealer" text="Dealer Margin %"/>
+
+    </Column>
+    
+    <Column id="csdDiscountColumn"  width="10rem">
+
+        <Text id="csd" text="CSD Discount %"/>
+
+    </Column>
+
+
+    <Column id="csdGstColumn" width="8rem">
+
+      <Text id="csdgst" text="CSD GST %"/>
+
+    </Column>
+
+
+    <Column id="orderTypeColumn"  width="8rem">
+
+        <Text id="ordertype" text="Order Type"/>
+   
+    </Column>
+
+    <Column id="statusColumn" width="8rem">
+
+        <Text id="status" text="Status"/>
+
+    </Column>
+
+
+    <Column id="approvalStatusColumn" width="10rem">
+
+        <Text id="approval" text="Approval Status"/>
+
+    </Column>
+    
+    <Column id="validFromColumn" width="9rem">
+
+       <Text id="valid" text="Valid From"/>
+
+    </Column>
+
+
+    <Column id="gemValueColumn" width="9rem">
+
+        <Text id="gem" text="GeM Value"/>
+
+   </Column>
+
+</columns>
+
+
+
+<items>
+
+    <ColumnListItem id="modelMasterRow">
+
+        <cells>
+
+            <Text id="modelCodeText" text="{modelCode}"/>
+
+            <Text id="modelDescriptionText" text="{modelDescription}"/>
+
+            <Text id="engineTypeText" text="{engineType}"/>
+
+            <Text id="ccWattText" text="{ccWatt}"/>
+
+            <Text id="gstPercentText" text="{gstPercent}"/>
+
+            <Text id="dealerMarginText" text="{dealerMarginPercent}"/>
+
+            <Text id="csdDiscountText" text="{csdDiscountPercent}"/>
+
+            <Text id="csdGstText" text="{csdGstPercent}"/>
+
+            <Text id="orderTypeText" text="{orderType}"/>
+
+            <ObjectStatus id="statusObjectStatus" text="{status}"/>
+
+            <ObjectStatus id="approvalStatusObjectStatus" text="{approvalStatus}"/>
+
+            <Text id="validFromText" text="{validFrom}"/>
+
+            <Text id="gemValueText" text="{gemValue}"/>
+
+        </cells>
+
+    </ColumnListItem>
+
+</items>
+
+</Table>
+
+<HBox id="paginationContainer" justifyContent="SpaceBetween" alignItems="Center" class="paginationContainer">
+
+    <HBox id="itemsPerPageBox" alignItems="Center">
+
+        <Text id="itemsPerPageLabel" text="Items per page:"/>
+
+        <Select id="itemsPerPageSelect" selectedKey="10" width="80px" change=".onItemsPerPageChange">
+
+            <items>
+                <core:Item id="itemsPerPage10" key="10" text="10"/>
+                <core:Item id="itemsPerPage20" key="20" text="20"/>
+                <core:Item id="itemsPerPage50" key="50" text="50"/>
+            </items>
+
+        </Select>
+
+    </HBox>
+
+
+    <HBox id="paginationRight" alignItems="Center">
+
+        <Text id="pageInfoText" text="1–10 of 25"/>
+
+        <Button id="firstPageButton" icon="sap-icon://media-rewind" type="Transparent" tooltip="First Page" press=".onFirstPage"/>
+
+        <Button id="previousPageButton" icon="sap-icon://navigation-left-arrow" type="Transparent" tooltip="Previous Page" press=".onPreviousPage"/>
+
+        <Button id="page1Button" text="1" type="Emphasized" press=".onPagePress"/>
+
+        <Button id="page2Button" text="2" type="Transparent" press=".onPagePress"/>
+
+        <Button id="page3Button" text="3" type="Transparent" press=".onPagePress"/>
+
+        <Button id="nextPageButton" icon="sap-icon://navigation-right-arrow" type="Transparent" tooltip="Next Page" press=".onNextPage"/>
+
+        <Button id="lastPageButton" icon="sap-icon://media-forward" type="Transparent" tooltip="Last Page" press=".onLastPage"/>
+
+    </HBox>
+
+</HBox>
+
+</VBox>
+
+</content>
+
+
+</Page>
+
+</mvc:View>

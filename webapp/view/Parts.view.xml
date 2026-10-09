@@ -1,0 +1,15 @@
+<mvc:View
+controllerName="vpamasterapproval.controller.Parts"
+xmlns:mvc="sap.ui.core.mvc"
+xmlns="sap.m">
+
+<Page>
+
+<content>
+ <Text id="text5" text="WELCOME TO VEHICLE PRICING AUTOMATION"/>
+
+</content>
+
+</Page>
+
+</mvc:View>
