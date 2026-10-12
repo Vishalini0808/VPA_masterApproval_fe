@@ -1,14 +1,116 @@
 <mvc:View
-controllerName="vpamasterapproval.controller.RTOMasters"
-xmlns:mvc="sap.ui.core.mvc"
-xmlns="sap.m">
+    controllerName="vpamasterapproval.controller.RTOMaster"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:table="sap.ui.table"
+    xmlns:rowmodes="sap.ui.table.rowmodes"
+    height="100%">
 
-<Page>
+    <Page showHeader="false" enableScrolling="false">
+        <content>
+            <!-- sap.ui.table.Table (grid table): binds with "rows", not "items" -->
+            <table:Table
+                id="rtoTable"
+                selectionMode="None"
+                enableColumnReordering="false"
+                rows="{
+                    path: '/RTOMasters',
+                    parameters: { $count: true },
+                    filters: [{ path: 'approvalStatus', operator: 'EQ', value1: 'SUBMITTED' }],
+                    sorter: [{ path: 'region_regionCode' }, { path: 'slab' }]
+                }">
 
-<content>
- <Text id="text3" text="WELCOME TO VEHICLE PRICING AUTOMATION"/>
+                <table:rowMode>
+                    <rowmodes:Auto minRowCount="8"/>
+                </table:rowMode>
 
-</content>
+                <table:extension>
+                    <OverflowToolbar>
+                        <Title id="titleText" text="RTO Master" level="H2"/>
+                        <ToolbarSpacer/>
+                        <SearchField
+                            width="22rem"
+                            placeholder="Search by Region Code..."
+                            search=".onSearch"/>
+                        <Button icon="sap-icon://refresh" text="Refresh" press=".onRefresh"/>
+                        <Button icon="sap-icon://download" text="Export" press=".onExport"/>
+                    </OverflowToolbar>
+                </table:extension>
 
-</Page>
+                <table:columns>
+                    <table:Column width="4rem" sortProperty="slab" hAlign="End">
+                        <Label text="Slab"/>
+                        <table:template><Text text="{slab}" wrapping="false"/></table:template>
+                    </table:Column>
+
+                    <table:Column width="8rem" sortProperty="region_regionCode" filterProperty="region_regionCode">
+                        <Label text="Region"/>
+                        <table:template><Text text="{region_regionCode}" wrapping="false"/></table:template>
+                    </table:Column>
+
+                    <table:Column width="8rem" sortProperty="engineType">
+                        <Label text="Engine Type"/>
+                        <table:template><Text text="{engineType}" wrapping="false"/></table:template>
+                    </table:Column>
+
+                    <table:Column width="7rem" hAlign="End" sortProperty="ccMin">
+                        <Label text="CC Min"/>
+                        <table:template><Text text="{ccMin}" wrapping="false"/></table:template>
+                    </table:Column>
+
+                    <table:Column width="7rem" hAlign="End" sortProperty="ccMax">
+                        <Label text="CC Max"/>
+                        <table:template><Text text="{ccMax}" wrapping="false"/></table:template>
+                    </table:Column>
+
+                    <table:Column width="9rem" hAlign="End" sortProperty="minimumPrice">
+                        <Label text="Min Price"/>
+                        <table:template><Text text="{minimumPrice}" wrapping="false"/></table:template>
+                    </table:Column>
+
+                    <table:Column width="9rem" hAlign="End" sortProperty="maximumPrice">
+                        <Label text="Max Price"/>
+                        <table:template><Text text="{maximumPrice}" wrapping="false"/></table:template>
+                    </table:Column>
+
+                    <table:Column width="7rem" hAlign="End" sortProperty="rtoPercent">
+                        <Label text="RTO %"/>
+                        <table:template>
+                            <Text text="{path:'rtoPercent', formatter:'.formatPercent'}" wrapping="false"/>
+                        </table:template>
+                    </table:Column>
+
+                    <table:Column width="8rem" hAlign="End">
+                        <Label text="Flat Price"/>
+                        <table:template><Text text="{flatPriceValue}" wrapping="false"/></table:template>
+                    </table:Column>
+
+                    <table:Column width="8rem" sortProperty="validFrom">
+                        <Label text="Valid From"/>
+                        <table:template><Text text="{validFrom}" wrapping="false"/></table:template>
+                    </table:Column>
+
+                    <table:Column width="7rem">
+                        <Label text="Status"/>
+                        <table:template>
+                            <ObjectStatus text="Submitted" state="Warning" inverted="true"/>
+                        </table:template>
+                    </table:Column>
+
+                    <table:Column width="7rem" hAlign="Center">
+                        <Label text="Actions"/>
+                        <table:template>
+                            <HBox justifyContent="Center">
+                                <Button icon="sap-icon://accept" type="Accept" tooltip="Approve"
+                                        press=".onApprove" class="sapUiTinyMarginEnd"/>
+                                <Button icon="sap-icon://decline" type="Reject" tooltip="Reject"
+                                        press=".onReject"/>
+                            </HBox>
+                        </table:template>
+                    </table:Column>
+                </table:columns>
+            </table:Table>
+        </content>
+    </Page>
 </mvc:View>
