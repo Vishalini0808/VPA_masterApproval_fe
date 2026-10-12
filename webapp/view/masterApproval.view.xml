@@ -9,17 +9,12 @@
 
     <tnt:ToolHeader id="toolheader">
 
-    <Button id="button" icon="sap-icon://menu2" type="Transparent" press=".onMenuPress"/>
-
-    <Image id="saplogo" src="images/download.png" width="50px"/>
+ 
+  
 
     <Title id="apptitle" text="Master Data Approval"/>
 
-    <ToolbarSpacer id="toolbar"/>
 
-    <SearchField id="globalSearch" width="280px" placeholder="Search in approval ...."/>
-
-    <Avatar id="userAvatar" initials="VP"/>
 
 
     
