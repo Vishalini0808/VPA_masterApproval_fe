@@ -3,7 +3,10 @@ controllerName="vpamasterapproval.controller.HomeDashboard"
 xmlns:mvc="sap.ui.core.mvc"
 xmlns="sap.m"
 xmlns:core="sap.ui.core"
-xmlns:layout="sap.ui.layout">
+xmlns:layout="sap.ui.layout"
+xmlns:viz="sap.viz.ui5.controls"
+xmlns:viz.data="sap.viz.ui5.data"
+xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds">
 
 
 <Page id="homedashboard" showHeader="false" enableScrolling="true">
@@ -21,7 +24,7 @@ xmlns:layout="sap.ui.layout">
                 <Title id="date" class="bannerDate" level="H6"/>
             </VBox>
 
-            <Image  id="bannerCarImage" src="images/goan-classic-350.avif" alt="Royal Enfield Classic 350"  decorative="false" densityAware="false"  width="280px"  height="120px" class="bannerCarImage"/>
+            <Image  id="bannerCarImage" src="images/rf.png" alt="Royal Enfield Classic 350"  decorative="false" densityAware="false"  width="280px"  height="140px" class="bannerCarImage"/>
 
         </HBox>
 
@@ -36,43 +39,164 @@ xmlns:layout="sap.ui.layout">
     
     </VBox>
 
+
+
   <HBox id="summaryCards" wrap="Wrap" class="summaryCards">
     <GenericTile id="modelMasterTile" header="Model Master" subheader="Vehicle models" class="summaryTile tileBlue">
         <TileContent id="modelMasterContent">
-            <NumericContent id="modelMasterNumeric" value="128" icon="sap-icon://car-rental" valueColor="Neutral"/>
+            <NumericContent id="modelMasterNumeric" value="{dashboardCounts>/Models/count}" icon="sap-icon://car-rental" valueColor="Neutral"/>
         </TileContent>
     </GenericTile>
     <GenericTile id="regionMasterTile" header="Region Master" subheader="Configured regions" class="summaryTile tileGreen">
         <TileContent id="regionMasterContent">
-            <NumericContent id="regionMasterNumeric" value="12" icon="sap-icon://map" valueColor="Neutral"/>
+            <NumericContent id="regionMasterNumeric" value="{dashboardCounts>/Regions/count}" icon="sap-icon://map" valueColor="Neutral"/>
         </TileContent>
     </GenericTile>
     <GenericTile id="pricingComponentsTile" header="Pricing Components" subheader="Pricing records" class="summaryTile tilePurple">
         <TileContent id="pricingComponentsContent">
-            <NumericContent id="pricingComponentsNumeric" value="24" icon="sap-icon://sales-document" valueColor="Neutral"/>
+            <NumericContent id="pricingComponentsNumeric" value="{dashboardCounts>/PricingComponents/count}" icon="sap-icon://sales-document" valueColor="Neutral"/>
         </TileContent>
     </GenericTile>
     <GenericTile id="rtoMasterTile" header="RTO Master" subheader="RTO records" class="summaryTile tileOrange">
         <TileContent id="rtoMasterContent">
-            <NumericContent id="rtoMasterNumeric" value="15" icon="sap-icon://building" valueColor="Neutral"/>
+            <NumericContent id="rtoMasterNumeric" value="{dashboardCounts>/RTOMasters/count}" icon="sap-icon://building" valueColor="Neutral"/>
         </TileContent>
     </GenericTile>
     <GenericTile id="rtoExpenseTile" header="RTO Expense" subheader="Expense records" class="summaryTile tileRed">
         <TileContent id="rtoExpenseContent">
-            <NumericContent id="rtoExpenseNumeric" value="10" icon="sap-icon://shield" valueColor="Neutral"/>
+            <NumericContent id="rtoExpenseNumeric" value="{dashboardCounts>/RTOExpense/count}" icon="sap-icon://shield" valueColor="Neutral"/>
         </TileContent>
     </GenericTile>
     <GenericTile id="partsTile" header="Parts" subheader="Parts records" class="summaryTile tileCyan">
         <TileContent id="partsContent">
-            <NumericContent id="partsNumeric" value="36" icon="sap-icon://shipping-status" valueColor="Neutral"/>
+            <NumericContent id="partsNumeric" value="{dashboardCounts>/Parts/count}" icon="sap-icon://shipping-status" valueColor="Neutral"/>
         </TileContent>
     </GenericTile>
     <GenericTile id="mtoConfigurationsTile" header="MTO Configurations" subheader="Configuration records" class="summaryTile tileNavy">
         <TileContent id="mtoConfigurationsContent">
-            <NumericContent id="mtoConfigurationsNumeric" value="7" icon="sap-icon://database" valueColor="Neutral"/>
+            <NumericContent id="mtoConfigurationsNumeric" value="{dashboardCounts>/MTOConfigurations/count}" icon="sap-icon://database" valueColor="Neutral"/>
         </TileContent>
     </GenericTile>
 </HBox>
+
+
+
+
+<HBox id="pricingAnalyticsContainer" width="100%" alignItems="Stretch"   class="pricingAnalyticsContainer">
+
+    <!-- LEFT: Approval Overview -->
+    <VBox id="approvalOverviewPanel" width="50%" class="pricingChartPanel">
+
+        <Title text="Approval Overview" level="H4"/>
+
+        <HBox id="approvalOverviewContent" width="100%" alignItems="Center"  class="approvalOverviewContent">
+
+            <!-- Pie chart -->
+            <VBox id="approvalPieChartContainer"  width="50%" class="approvalPieChartContainer">
+
+                <viz:VizFrame id="approvalStatusPieChart" vizType="pie"  width="100%" height="300px"   uiConfig="{applicationSet:'fiori'}">
+
+                    <viz:dataset>
+                        <viz.data:FlattenedDataset  data="{approvalStatus>/items}">
+
+                            <viz.data:dimensions>
+                                <viz.data:DimensionDefinition name="Approval Status" value="{approvalStatus>status}"/>
+                            </viz.data:dimensions>
+
+                            <viz.data:measures>
+                                <viz.data:MeasureDefinition  name="Count" value="{approvalStatus>count}"/>
+                            </viz.data:measures>
+
+                        </viz.data:FlattenedDataset>
+                    </viz:dataset>
+
+                    <viz:feeds>
+                        <viz.feeds:FeedItem  uid="color" type="Dimension"  values="Approval Status"/>
+
+                        <viz.feeds:FeedItem uid="size" type="Measure" values="Count"/>
+                    </viz:feeds>
+
+                </viz:VizFrame>
+            </VBox>
+
+            <!-- Status counts -->
+            <VBox id="approvalStatusCounts" width="50%"  class="approvalStatusCounts">
+
+                <HBox id="submittedCountRow"   alignItems="Center" class="approvalStatusRow">
+
+                    <core:Icon  src="sap-icon://circle-task" color="#1687E8"    size="1rem"/>
+
+                    <VBox class="approvalStatusDetails">
+                        <Text text="Submitted"/>
+                        <Text text="Awaiting approval" class="approvalStatusHint"/>
+                    </VBox>
+
+                    <ObjectNumber id="submittedCount" number="{approvalStatus>/items/0/count}" emphasized="true"/>
+                </HBox>
+
+                <HBox  id="approvedCountRow" alignItems="Center" class="approvalStatusRow">
+
+                    <core:Icon src="sap-icon://status-positive" color="#B87400" size="1rem"/>
+
+                    <VBox class="approvalStatusDetails">
+                        <Text text="Approved"/>
+                        <Text text="Successfully approved" class="approvalStatusHint"/>
+                    </VBox>
+
+                    <ObjectNumber id="approvedCount"  number="{approvalStatus>/items/1/count}" emphasized="true"/>
+                </HBox>
+
+                <HBox id="rejectedCountRow" alignItems="Center" class="approvalStatusRow">
+
+                    <core:Icon src="sap-icon://status-negative"  color="#D94F55" size="1rem"/>
+
+                    <VBox class="approvalStatusDetails">
+                        <Text text="Rejected"/>
+                        <Text text="Requires review" class="approvalStatusHint"/>
+                    </VBox>
+
+                    <ObjectNumber id="rejectedCount"  number="{approvalStatus>/items/2/count}"   emphasized="true"/>
+                </HBox>
+
+            </VBox>
+        </HBox>
+    </VBox>
+
+    <!-- RIGHT: Vehicle Price Comparison -->
+    <VBox  id="vehiclePriceTrendPanel" width="50%" class="pricingChartPanel vehiclePriceTrendPanel">
+
+        <Title text="Vehicle Price Comparison" level="H4"/>
+
+        <Text  text="GeM Value by Vehicle Model" class="chartAxisLabel"/>
+
+        <viz:VizFrame  id="vehiclePriceTrendChart" vizType="line" width="100%" height="320px" uiConfig="{applicationSet:'fiori'}">
+
+            <viz:dataset>
+                <viz.data:FlattenedDataset
+                    data="{priceModel>/items}">
+
+                    <viz.data:dimensions>
+                        <viz.data:DimensionDefinition name="Vehicle Model" value="{priceModel>modelCode}"/>
+                    </viz.data:dimensions>
+
+                    <viz.data:measures>
+                        <viz.data:MeasureDefinition name="GeM Value" value="{priceModel>gemValue}"/>
+                    </viz.data:measures>
+
+                </viz.data:FlattenedDataset>
+            </viz:dataset>
+
+            <viz:feeds>
+                <viz.feeds:FeedItem   uid="categoryAxis"  type="Dimension"  values="Vehicle Model"/>
+
+                <viz.feeds:FeedItem  uid="valueAxis" type="Measure" values="GeM Value"/>
+            </viz:feeds>
+
+        </viz:VizFrame>
+    </VBox>
+
+</HBox>
+
 
     </VBox>
 

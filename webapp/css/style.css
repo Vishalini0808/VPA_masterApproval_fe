@@ -1,4 +1,7 @@
-/* Enter your custom styles here */
+
+/* =========================================================
+   GLOBAL / MODEL MASTER TOOLBAR
+   ========================================================= */
 
 .modelMasterToolbar {
     width: 100%;
@@ -22,6 +25,11 @@
 .modelMasterToolbar .sapMBtnInner {
     white-space: nowrap;
 }
+
+/* =========================================================
+   MODEL MASTER PAGE
+   ========================================================= */
+
 .modelMasterContainer {
     width: 100%;
     max-width: 100%;
@@ -39,11 +47,19 @@
     overflow-x: hidden;
 }
 
+/* =========================================================
+   HOME DASHBOARD
+   ========================================================= */
 
 .homeDashboard {
     background: #eef4fa;
     min-height: 100%;
+    box-sizing: border-box;
 }
+
+/* =========================================================
+   DASHBOARD BANNER
+   ========================================================= */
 
 .dashboardBanner {
     background: linear-gradient(110deg, #075bb8, #123d70);
@@ -70,32 +86,13 @@
     margin-top: 0.5rem;
 }
 
-.sectionTitle {
-    margin-top: 0.75rem;
-    margin-bottom: 0.75rem;
-    color: #183b63;
+.bannerDate {
+    color: #ffffff;
 }
 
-.summaryCards {
-    gap: 0.75rem;
-}
-
-.summaryTile {
-    width: 15rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 5px rgba(20, 60, 100, 0.08);
-}
-
-.analyticsCards {
-    gap: 1rem;
-}
-
-.analyticsPanel {
-    flex: 1 1 24rem;
-    min-width: 20rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 5px rgba(20, 60, 100, 0.08);
-}
+/* =========================================================
+   PAGE TITLES
+   ========================================================= */
 
 .pageTitleContainer {
     padding: 1rem 1.5rem;
@@ -105,17 +102,23 @@
 .pageTitle {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #17365D;
+    color: #17365d;
 }
 
 .pageSubtitle {
     font-size: 0.875rem;
-    color: #64748B;
+    color: #64748b;
     margin-top: 0.25rem;
 }
 
+.sectionTitle {
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+    color: #183b63;
+}
+
 .masterDataHeading {
-    color: #17365D !important;
+    color: #17365d !important;
     font-size: 1.35rem !important;
     font-weight: 700 !important;
     margin: 0.5rem 0 0.75rem 0.5rem;
@@ -124,6 +127,10 @@
 .masterDataGrid {
     padding: 0 0.25rem;
 }
+
+/* =========================================================
+   MASTER DATA TILES
+   ========================================================= */
 
 .masterDataTile {
     width: 100% !important;
@@ -140,7 +147,7 @@
 }
 
 .tileBlue {
-    border-top: 4px solid #1676D2 !important;
+    border-top: 4px solid #1676d2 !important;
 }
 
 .tileTeal {
@@ -148,25 +155,28 @@
 }
 
 .tilePurple {
-    border-top: 4px solid #8064C8 !important;
+    border-top: 4px solid #8064c8 !important;
 }
 
 .tileOrange {
-    border-top: 4px solid #E99A32 !important;
+    border-top: 4px solid #e99a32 !important;
 }
 
 .tileRed {
-    border-top: 4px solid #D9534F !important;
+    border-top: 4px solid #d9534f !important;
 }
 
 .tileNavy {
-    border-top: 4px solid #244A73 !important;
+    border-top: 4px solid #244a73 !important;
 }
 
 .tileGreen {
-    border-top: 4px solid #439B62 !important;
+    border-top: 4px solid #439b62 !important;
 }
 
+/* =========================================================
+   SUMMARY CARDS
+   ========================================================= */
 
 .summaryCards {
     display: flex;
@@ -177,70 +187,248 @@
 }
 
 .summaryTile {
+    box-sizing: border-box;
     flex: 1 1 15rem;
     min-width: 13rem;
     max-width: 20rem;
     height: 8rem;
-    border: 1px solid #D8E6F5;
+    border: 1px solid #d8e6f5;
     border-radius: 0.75rem;
     box-shadow: none;
     overflow: hidden;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.summaryTile:hover {
+    box-shadow: 0 4px 12px rgba(20, 60, 100, 0.1);
 }
 
 .summaryTile .sapMGTHeaderText {
-    color: #17365D;
+    color: #17365d;
     font-weight: 600;
 }
 
 .summaryTile .sapMGTSubHdrTxt {
-    color: #5B789A;
+    color: #5b789a;
 }
 
 .summaryTile .sapMNCValue {
     font-weight: 700;
-    color: #17365D;
+    color: #17365d;
 }
 
 .summaryTile .sapMNCIconImage {
     font-size: 1.5rem;
 }
 
+/* Individual tile colors */
+
 .tileBlue {
-    background: #F1F7FF !important;
-    border-color: #C9E0FF;
+    background: #f1f7ff !important;
+    border-color: #c9e0ff;
 }
 
 .tileGreen {
-    background: #F0FBF5 !important;
-    border-color: #C8EED9;
+    background: #f0fbf5 !important;
+    border-color: #c8eed9;
 }
 
 .tilePurple {
-    background: #F7F4FF !important;
-    border-color: #DED3FF;
+    background: #f7f4ff !important;
+    border-color: #ded3ff;
 }
 
 .tileOrange {
-    background: #FFF8F0 !important;
-    border-color: #FFDFC0;
+    background: #fff8f0 !important;
+    border-color: #ffdfc0;
 }
 
 .tileRed {
-    background: #FFF3F5 !important;
-    border-color: #FFD5DF;
+    background: #fff3f5 !important;
+    border-color: #ffd5df;
 }
 
 .tileCyan {
-    background: #EFFBFC !important;
-    border-color: #C5EEF0;
+    background: #effbfc !important;
+    border-color: #c5eef0;
 }
 
 .tileNavy {
-    background: #F1F5FF !important;
-    border-color: #D1DCFF;
+    background: #f1f5ff !important;
+    border-color: #d1dcff;
 }
 
-.tileCyan {
-    background: #EFFBFC !important;
-    border-color: #C5EEF0 !important;
+/* =========================================================
+   ANALYTICS PANELS
+   ========================================================= */
+
+.analyticsCards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.analyticsPanel {
+    box-sizing: border-box;
+    flex: 1 1 24rem;
+    min-width: 20rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 5px rgba(20, 60, 100, 0.08);
+}
+
+/* =========================================================
+   APPROVAL OVERVIEW CARD
+   ========================================================= */
+
+.approvalOverviewCard {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 1.25rem;
+    background: #ffffff;
+    border: 1px solid #dce6f1;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(24, 59, 99, 0.05);
+}
+
+.approvalOverviewTitle {
+    color: #173b67;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.approvalOverviewSubtitle {
+    color: #647890;
+    font-size: 0.875rem;
+}
+
+/* =========================================================
+   APPROVAL CHART LAYOUT
+   ========================================================= */
+
+.approvalOverviewContent {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    width: 100%;
+    min-width: 0;
+    gap: 1rem;
+    box-sizing: border-box;
+}
+
+/* Left side: donut chart */
+
+
+.approvalDonutSection {
+    display: block;
+    position: relative;
+    box-sizing: border-box;
+
+    /* Prevent the chart section from shrinking to zero */
+    flex: 0 0 calc(50% - 0.5rem);
+    width: calc(50% - 0.5rem);
+    min-width: 320px;
+    height: 320px;
+    min-height: 320px;
+
+    overflow: visible;
+}
+
+/* Explicit SAP VizFrame dimensions */
+
+.approvalDonutSection .sapUiVizFrame,
+.approvalDonutSection .sapVizFrame {
+    display: block !important;
+    position: relative;
+    box-sizing: border-box;
+
+    width: 100% !important;
+    min-width: 0;
+    height: 300px !important;
+    min-height: 300px;
+}
+
+/* Chart rendering area */
+
+.approvalDonutSection .ui5-viz-controls-app {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Right side: status counts */
+
+.approvalStatusCounts {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    padding: 0.5rem;
+    gap: 0.75rem;
+}
+
+/* Individual status row */
+
+.approvalStatusRow {
+    display: flex;
+    box-sizing: border-box;
+    align-items: center;
+    width: 100%;
+    min-height: 68px;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: #f7faff;
+    border: 1px solid #e5edf6;
+    border-radius: 0.5rem;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.approvalStatusRow:hover {
+    background: #eef5ff;
+    border-color: #cbdcf1;
+}
+
+/* Status label and description */
+
+.approvalStatusDetails {
+    box-sizing: border-box;
+    flex: 1;
+    min-width: 0;
+    gap: 0.25rem;
+}
+
+.approvalStatusHint {
+    color: #647890;
+    font-size: 0.75rem;
+}
+
+.pricingAnalyticsContainer {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    width: 100%;
+    box-sizing: border-box;
+    align-items: stretch;
+}
+
+.pricingAnalyticsContainer > .sapMFlexItem {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.pricingChartPanel {
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #DCE8F8;
+    border-radius: 12px;
+    background: #FFFFFF;
+}
+
+@media (max-width: 768px) {
+    .pricingAnalyticsContainer {
+        flex-direction: column;
+    }
 }
