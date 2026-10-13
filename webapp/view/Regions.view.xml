@@ -1,15 +1,273 @@
+
 <mvc:View
-controllerName="vpamasterapproval.controller.Regions"
-xmlns:mvc="sap.ui.core.mvc"
-xmlns="sap.m">
+    controllerName="vpamasterapproval.controller.Regions"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:table="sap.ui.table">
 
-<Page>
+    <Page id="regionApprovalPage">
 
-<content>
- <Text id="text1" text="WELCOME TO VEHICLE PRICING AUTOMATION"/>
+        <content>
 
-</content>
+            <VBox
+                id="regionApprovalContainer"
+                width="auto"
+                class="sapUiMediumMargin">
 
-</Page>
+                <!-- HEADER -->
+
+                <HBox
+                    id="regionApprovalHeader"
+                    alignItems="Center"
+                    class="sapUiSmallMarginBottom">
+
+                    <core:Icon
+                        id="regionApprovalIcon"
+                        src="sap-icon://map"
+                        size="2rem"
+                        class="sapUiSmallMarginEnd"/>
+
+                    <VBox id="regionApprovalTitleBox">
+
+                        <Title
+                            id="regionApprovalTitle"
+                            text="Region Master"
+                            level="H2"/>
+
+                        <Text
+                            id="regionApprovalPendingCountText"
+                            text="{regionApprovalVM>/pendingCountText}"/>
+
+                    </VBox>
+
+                </HBox>
+
+                <!-- SEARCH TOOLBAR -->
+
+                <OverflowToolbar
+                    id="regionApprovalToolbar"
+                    width="100%"
+                    class="regionMasterToolbar">
+
+                    <SearchField
+                        id="regionApprovalSearchField"
+                        width="300px"
+                        placeholder="Search by Region Code or Name..."
+                        liveChange=".onSearch">
+
+                        <layoutData>
+                            <OverflowToolbarLayoutData
+                                priority="NeverOverflow"
+                                shrinkable="true"
+                                minWidth="150px"/>
+                        </layoutData>
+
+                    </SearchField>
+
+                    <Select
+                        id="regionApprovalFieldFilterSelect"
+                        width="170px"
+                        selectedKey="all"
+                        change=".onSearch">
+
+                        <items>
+
+                            <core:Item
+                                id="regionApprovalAllFieldsItem"
+                                key="all"
+                                text="All Fields"/>
+
+                            <core:Item
+                                id="regionApprovalCodeFilterItem"
+                                key="regionCode"
+                                text="Region Code"/>
+
+                            <core:Item
+                                id="regionApprovalNameFilterItem"
+                                key="regionName"
+                                text="Region Name"/>
+
+                            <core:Item
+                                id="regionApprovalRtoFilterItem"
+                                key="rtoBasis"
+                                text="RTO Basis"/>
+
+                        </items>
+
+                    </Select>
+
+                    <ToolbarSpacer id="regionApprovalToolbarSpacer"/>
+
+                    <Button
+                        id="regionApprovalRefreshButton"
+                        text="Refresh"
+                        icon="sap-icon://refresh"
+                        type="Transparent"
+                        press=".onRefresh">
+
+                        <layoutData>
+                            <OverflowToolbarLayoutData
+                                priority="NeverOverflow"/>
+                        </layoutData>
+
+                    </Button>
+
+                </OverflowToolbar>
+
+                <!-- REGION TABLE -->
+
+                <table:Table
+                    id="regionApprovalTable"
+                    width="100%"
+                    visibleRowCount="10"
+                    selectionMode="None"
+                    enableColumnReordering="true"
+                    rowsUpdated=".onRowsUpdated"
+                    class="regionMasterTable"
+                    rows="{
+                        path: '/Regions',
+                        filters: [
+                            {
+                                path: 'status',
+                                operator: 'EQ',
+                                value1: 'SUBMITTED'
+                            }
+                        ]
+                    }">
+
+                    <table:columns>
+
+                        <!-- REGION CODE -->
+
+                        <table:Column
+                            id="regionApprovalCodeColumn"
+                            width="12rem"
+                            sortProperty="regionCode"
+                            filterProperty="regionCode">
+
+                            <Label
+                                id="regionApprovalCodeLabel"
+                                text="Region Code"/>
+
+                            <table:template>
+                                <Text
+                                    id="regionApprovalCodeText"
+                                    text="{regionCode}"/>
+                            </table:template>
+
+                        </table:Column>
+
+                        <!-- REGION NAME -->
+
+                        <table:Column
+                            id="regionApprovalNameColumn"
+                            width="18rem"
+                            sortProperty="regionName"
+                            filterProperty="regionName">
+
+                            <Label
+                                id="regionApprovalNameLabel"
+                                text="Region Name"/>
+
+                            <table:template>
+                                <Text
+                                    id="regionApprovalNameText"
+                                    text="{regionName}"/>
+                            </table:template>
+
+                        </table:Column>
+
+                        <!-- RTO BASIS -->
+
+                        <table:Column
+                            id="regionApprovalRtoColumn"
+                            width="12rem"
+                            sortProperty="rtoBasis"
+                            filterProperty="rtoBasis">
+
+                            <Label
+                                id="regionApprovalRtoLabel"
+                                text="RTO Basis"/>
+
+                            <table:template>
+                                <Text
+                                    id="regionApprovalRtoText"
+                                    text="{rtoBasis}"/>
+                            </table:template>
+
+                        </table:Column>
+
+                        <!-- APPROVAL STATUS -->
+
+                        <table:Column
+                            id="regionApprovalStatusColumn"
+                            width="12rem"
+                            sortProperty="status"
+                            filterProperty="status">
+
+                            <Label
+                                id="regionApprovalStatusLabel"
+                                text="Approval Status"/>
+
+                            <table:template>
+                                <ObjectStatus
+                                    id="regionApprovalStatusObject"
+                                    text="{status}"
+                                    state="Warning"/>
+                            </table:template>
+
+                        </table:Column>
+
+                        <!-- ACTIONS -->
+
+                        <table:Column
+                            id="regionApprovalActionsColumn"
+                            width="16rem"
+                            hAlign="Center">
+
+                            <Label
+                                id="regionApprovalActionsLabel"
+                                text="Actions"/>
+
+                            <table:template>
+
+                                <HBox
+                                    id="regionApprovalActionsBox"
+                                    alignItems="Center"
+                                    justifyContent="Center">
+
+                                    <Button
+                                        id="regionApprovalApproveButton"
+                                        text="Approve"
+                                        icon="sap-icon://accept"
+                                        type="Accept"
+                                        class="sapUiTinyMarginEnd"
+                                        enabled="{= ${status} === 'SUBMITTED' }"
+                                        press=".onApprove"/>
+
+                                    <Button
+                                        id="regionApprovalRejectButton"
+                                        text="Reject"
+                                        icon="sap-icon://decline"
+                                        type="Reject"
+                                        enabled="{= ${status} === 'SUBMITTED' }"
+                                        press=".onReject"/>
+
+                                </HBox>
+
+                            </table:template>
+
+                        </table:Column>
+
+                    </table:columns>
+
+                </table:Table>
+
+            </VBox>
+
+        </content>
+
+    </Page>
 
 </mvc:View>
