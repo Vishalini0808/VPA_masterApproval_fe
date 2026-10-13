@@ -1,14 +1,412 @@
+
 <mvc:View
-controllerName="vpamasterapproval.controller.PricingComponents"
-xmlns:mvc="sap.ui.core.mvc"
-xmlns="sap.m">
+    controllerName="vpamasterapproval.controller.PricingComponents"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:table="sap.ui.table">
 
-<Page>
+    <Page id="pricingCompApprovalPage">
 
-<content>
- <Text id="text4" text="WELCOME TO VEHICLE PRICING AUTOMATION"/>
+        <content>
 
-</content>
+            <VBox
+                id="pricingCompApprovalContainer"
+                width="auto"
+                class="sapUiMediumMargin">
 
-</Page>
+                <!-- HEADER -->
+
+                <HBox
+                    id="pricingCompApprovalHeader"
+                    alignItems="Center"
+                    class="sapUiSmallMarginBottom">
+
+                    <core:Icon
+                        id="pricingCompApprovalIcon"
+                        src="sap-icon://sales-document"
+                        size="2rem"
+                        class="sapUiSmallMarginEnd"/>
+
+                    <VBox id="pricingCompApprovalTitleBox">
+
+                        <Title
+                            id="pricingCompApprovalTitle"
+                            text="Pricing Components Master"
+                            level="H2"/>
+
+                        <Text
+                            id="pricingCompApprovalPendingCountText"
+                            text="{pricingCompApprovalVM>/pendingCountText}"/>
+
+                    </VBox>
+
+                </HBox>
+
+
+                <!-- SEARCH TOOLBAR -->
+
+                <OverflowToolbar
+                    id="pricingCompApprovalToolbar"
+                    width="100%"
+                    class="pricingCompApprovalToolbar">
+
+                    <SearchField
+                        id="pricingCompApprovalSearchField"
+                        width="300px"
+                        placeholder="Search by Region Code or Engine Type..."
+                        liveChange=".onSearch">
+
+                        <layoutData>
+                            <OverflowToolbarLayoutData
+                                priority="NeverOverflow"
+                                shrinkable="true"
+                                minWidth="150px"/>
+                        </layoutData>
+
+                    </SearchField>
+
+                    <Select
+                        id="pricingCompApprovalFieldFilterSelect"
+                        width="170px"
+                        selectedKey="all"
+                        change=".onSearch">
+
+                        <items>
+
+                            <core:Item
+                                key="all"
+                                text="All Fields"/>
+
+                            <core:Item
+                                key="regionCode"
+                                text="Region Code"/>
+
+                            <core:Item
+                                key="engineType"
+                                text="Engine Type"/>
+
+                        </items>
+
+                    </Select>
+
+                    <ToolbarSpacer
+                        id="pricingCompApprovalToolbarSpacer"/>
+
+                    <Button
+                        id="pricingCompApprovalRefreshButton"
+                        text="Refresh"
+                        icon="sap-icon://refresh"
+                        type="Transparent"
+                        press=".onRefresh">
+
+                        <layoutData>
+                            <OverflowToolbarLayoutData
+                                priority="NeverOverflow"/>
+                        </layoutData>
+
+                    </Button>
+
+                </OverflowToolbar>
+
+
+                <!-- PRICING COMPONENTS TABLE -->
+
+                <table:Table
+                    id="pricingCompApprovalTable"
+                    width="100%"
+                    visibleRowCount="10"
+                    selectionMode="None"
+                    enableColumnReordering="true"
+                    rowsUpdated=".onRowsUpdated"
+                    class="pricingCompApprovalTable"
+
+                    rows="{
+                        path: '/PricingComponents',
+                        filters: [
+                            {
+                                path: 'approvalStatus',
+                                operator: 'EQ',
+                                value1: 'SUBMITTED'
+                            }
+                        ]
+                    }">
+
+                    <table:columns>
+
+                        <!-- REGION CODE -->
+
+                        <table:Column
+                            id="pricingCompApprovalRegionColumn"
+                            width="10rem"
+                            sortProperty="regionCode"
+                            filterProperty="regionCode">
+
+                            <Label text="Region Code"/>
+
+                            <table:template>
+                                <Text text="{regionCode}"/>
+                            </table:template>
+
+                        </table:Column>
+
+
+                        <!-- ENGINE TYPE -->
+
+                        <table:Column
+                            id="pricingCompApprovalEngineColumn"
+                            width="10rem"
+                            sortProperty="engineType"
+                            filterProperty="engineType">
+
+                            <Label text="Engine Type"/>
+
+                            <table:template>
+                                <Text text="{engineType}"/>
+                            </table:template>
+
+                        </table:Column>
+
+
+                        <!-- VALID FROM -->
+
+                        <table:Column
+                            id="pricingCompApprovalValidFromColumn"
+                            width="10rem"
+                            sortProperty="validFrom">
+
+                            <Label text="Valid From"/>
+
+                            <table:template>
+                                <Text text="{validFrom}"/>
+                            </table:template>
+
+                        </table:Column>
+
+
+                        <!-- HELMET -->
+
+                        <table:Column
+                            id="pricingCompApprovalHelmetColumn"
+                            width="9rem"
+                            hAlign="End">
+
+                            <Label text="Helmet"/>
+
+                            <table:template>
+                                <Text text="{helmet}"/>
+                            </table:template>
+
+                        </table:Column>
+
+
+                        <!-- TRANSPORTATION -->
+
+                        <table:Column
+                            id="pricingCompApprovalTransportationColumn"
+                            width="11rem"
+                            hAlign="End">
+
+                            <Label text="Transportation"/>
+
+                            <table:template>
+                                <Text text="{transportation}"/>
+                            </table:template>
+
+                        </table:Column>
+
+
+                        <!-- HELMET MARGIN -->
+
+                        <table:Column
+                            id="pricingCompApprovalHelmetMarginColumn"
+                            width="11rem"
+                            hAlign="End">
+
+                            <Label text="Helmet Margin"/>
+
+                            <table:template>
+                                <Text text="{helmetMargin}"/>
+                            </table:template>
+
+                        </table:Column>
+
+
+                        <!-- OTHER EXPENSES BELOW 500 -->
+
+                        <table:Column
+                            id="pricingCompApprovalOtherBelowColumn"
+                            width="13rem"
+                            hAlign="End">
+
+                            <Label text="Other Expenses Below 500"/>
+
+                            <table:template>
+                                <Text text="{otherExpensesBelow500}"/>
+                            </table:template>
+
+                        </table:Column>
+
+
+                        <!-- OTHER EXPENSES ABOVE 500 -->
+
+                        <table:Column
+                            id="pricingCompApprovalOtherAboveColumn"
+                            width="13rem"
+                            hAlign="End">
+
+                            <Label text="Other Expenses Above 500"/>
+
+                            <table:template>
+                                <Text text="{otherExpensesAbove500}"/>
+                            </table:template>
+
+                        </table:Column>
+
+
+                        <!-- INSURANCE RATE BELOW 350 -->
+
+                        <table:Column
+                            id="pricingCompApprovalInsuranceBelowColumn"
+                            width="13rem"
+                            hAlign="End">
+
+                            <Label text="Insurance Rate Below 350"/>
+
+                            <table:template>
+                                <Text text="{insuranceRateBelow350}"/>
+                            </table:template>
+
+                        </table:Column>
+
+
+                        <!-- INSURANCE RATE ABOVE 350 -->
+
+                        <table:Column
+                            id="pricingCompApprovalInsuranceAboveColumn"
+                            width="13rem"
+                            hAlign="End">
+
+                            <Label text="Insurance Rate Above 350"/>
+
+                            <table:template>
+                                <Text text="{insuranceRateAbove350}"/>
+                            </table:template>
+
+                        </table:Column>
+
+
+                        <!-- TPA PA BELOW 350 -->
+
+                        <table:Column
+                            id="pricingCompApprovalTpaBelowColumn"
+                            width="12rem"
+                            hAlign="End">
+
+                            <Label text="TPA/PA Below 350"/>
+
+                            <table:template>
+                                <Text text="{tpaPaBelow350}"/>
+                            </table:template>
+
+                        </table:Column>
+
+
+                        <!-- TPA PA ABOVE 350 -->
+
+                        <table:Column
+                            id="pricingCompApprovalTpaAboveColumn"
+                            width="12rem"
+                            hAlign="End">
+
+                            <Label text="TPA/PA Above 350"/>
+
+                            <table:template>
+                                <Text text="{tpaPaAbove350}"/>
+                            </table:template>
+
+                        </table:Column>
+
+
+                        <!-- NUMBER PLATE CHARGES -->
+
+                        <table:Column
+                            id="pricingCompApprovalPlateColumn"
+                            width="12rem"
+                            hAlign="End">
+
+                            <Label text="No. Plate Charges"/>
+
+                            <table:template>
+                                <Text text="{noPlateCharges}"/>
+                            </table:template>
+
+                        </table:Column>
+
+
+                        <!-- APPROVAL STATUS -->
+
+                        <table:Column
+                            id="pricingCompApprovalStatusColumn"
+                            width="12rem">
+
+                            <Label text="Approval Status"/>
+
+                            <table:template>
+
+                                <ObjectStatus
+                                    text="{approvalStatus}"
+                                    state="Warning"/>
+
+                            </table:template>
+
+                        </table:Column>
+
+
+                        <!-- ROW LEVEL ACTIONS -->
+
+                        <table:Column
+                            id="pricingCompApprovalActionsColumn"
+                            width="17rem"
+                            hAlign="Center">
+
+                            <Label text="Actions"/>
+
+                            <table:template>
+
+                                <HBox
+                                    alignItems="Center"
+                                    justifyContent="Center">
+
+                                    <Button
+                                        text="Approve"
+                                        icon="sap-icon://accept"
+                                        type="Accept"
+                                        class="sapUiTinyMarginEnd"
+                                        enabled="{= ${approvalStatus} === 'SUBMITTED' }"
+                                        press=".onApprove"/>
+
+                                    <Button
+                                        text="Reject"
+                                        icon="sap-icon://decline"
+                                        type="Reject"
+                                        enabled="{= ${approvalStatus} === 'SUBMITTED' }"
+                                        press=".onReject"/>
+
+                                </HBox>
+
+                            </table:template>
+
+                        </table:Column>
+
+                    </table:columns>
+
+                </table:Table>
+
+            </VBox>
+
+        </content>
+
+    </Page>
+
 </mvc:View>
