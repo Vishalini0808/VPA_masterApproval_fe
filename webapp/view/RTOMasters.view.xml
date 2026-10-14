@@ -1,14 +1,283 @@
 <mvc:View
-controllerName="vpamasterapproval.controller.RTOMasters"
-xmlns:mvc="sap.ui.core.mvc"
-xmlns="sap.m">
+    controllerName="vpamasterapproval.controller.RTOMasters"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:table="sap.ui.table">
 
-<Page>
+    <Page id="rtoApprovalPage">
 
-<content>
- <Text id="text3" text="WELCOME TO VEHICLE PRICING AUTOMATION"/>
+        <content>
 
-</content>
+            <VBox
+                id="rtoApprovalContainer"
+                width="auto"
+                class="sapUiMediumMargin">
 
-</Page>
+                <!-- HEADER -->
+
+                <HBox
+                    id="rtoApprovalHeader"
+                    alignItems="Center"
+                    class="sapUiSmallMarginBottom">
+
+                    <core:Icon
+                        id="rtoApprovalIcon"
+                        src="sap-icon://building"
+                        size="2rem"
+                        class="sapUiSmallMarginEnd"/>
+
+                    <VBox id="rtoApprovalTitleBox">
+
+                        <Title
+                            id="rtoApprovalTitle"
+                            text="RTO Master"
+                            level="H2"/>
+
+                        <Text
+                            id="rtoApprovalPendingCountText"
+                            text="{rtoApprovalVM>/pendingCountText}"/>
+
+                    </VBox>
+
+                </HBox>
+
+
+                <!-- SEARCH TOOLBAR -->
+
+                <OverflowToolbar
+                    id="rtoApprovalToolbar"
+                    width="100%">
+
+                    <SearchField
+                        id="rtoApprovalSearchField"
+                        width="300px"
+                        placeholder="Search by Region Code or Engine Type..."
+                        liveChange=".onSearch">
+
+                        <layoutData>
+                            <OverflowToolbarLayoutData
+                                priority="NeverOverflow"
+                                shrinkable="true"
+                                minWidth="150px"/>
+                        </layoutData>
+
+                    </SearchField>
+
+                    <Select
+                        id="rtoApprovalFieldFilterSelect"
+                        width="170px"
+                        selectedKey="all"
+                        change=".onSearch">
+
+                        <items>
+                            <core:Item key="all" text="All Fields"/>
+                            <core:Item key="regionCode" text="Region Code"/>
+                            <core:Item key="engineType" text="Engine Type"/>
+                        </items>
+
+                    </Select>
+
+                    <ToolbarSpacer id="rtoApprovalToolbarSpacer"/>
+
+                    <Button
+                        id="rtoApprovalRefreshButton"
+                        text="Refresh"
+                        icon="sap-icon://refresh"
+                        type="Transparent"
+                        press=".onRefresh">
+
+                        <layoutData>
+                            <OverflowToolbarLayoutData priority="NeverOverflow"/>
+                        </layoutData>
+
+                    </Button>
+
+                </OverflowToolbar>
+
+
+                <!-- RTO TABLE (only SUBMITTED records are requested from the server) -->
+
+                <table:Table
+                    id="rtoApprovalTable"
+                    width="100%"
+                    visibleRowCount="10"
+                    selectionMode="None"
+                    enableColumnReordering="true"
+                    rowsUpdated=".onRowsUpdated"
+
+                    rows="{
+                        path: '/RTOMasters',
+                        parameters: { $count: true },
+                        sorter: [
+                            { path: 'region_regionCode' },
+                            { path: 'slab' }
+                        ],
+                        filters: [
+                            {
+                                path: 'approvalStatus',
+                                operator: 'EQ',
+                                value1: 'SUBMITTED'
+                            }
+                        ]
+                    }">
+
+                    <table:columns>
+
+                        <table:Column
+                            id="rtoApprovalSlabColumn"
+                            width="5rem"
+                            hAlign="End"
+                            sortProperty="slab">
+                            <Label text="Slab"/>
+                            <table:template>
+                                <Text text="{slab}"/>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column
+                            id="rtoApprovalRegionColumn"
+                            width="10rem"
+                            sortProperty="region_regionCode"
+                            filterProperty="region_regionCode">
+                            <Label text="Region Code"/>
+                            <table:template>
+                                <Text text="{region_regionCode}"/>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column
+                            id="rtoApprovalEngineColumn"
+                            width="10rem"
+                            sortProperty="engineType"
+                            filterProperty="engineType">
+                            <Label text="Engine Type"/>
+                            <table:template>
+                                <Text text="{engineType}"/>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column
+                            id="rtoApprovalCcMinColumn"
+                            width="8rem"
+                            hAlign="End"
+                            sortProperty="ccMin">
+                            <Label text="CC Min"/>
+                            <table:template>
+                                <Text text="{ccMin}"/>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column
+                            id="rtoApprovalCcMaxColumn"
+                            width="8rem"
+                            hAlign="End"
+                            sortProperty="ccMax">
+                            <Label text="CC Max"/>
+                            <table:template>
+                                <Text text="{ccMax}"/>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column
+                            id="rtoApprovalMinPriceColumn"
+                            width="10rem"
+                            hAlign="End"
+                            sortProperty="minimumPrice">
+                            <Label text="Minimum Price"/>
+                            <table:template>
+                                <Text text="{minimumPrice}"/>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column
+                            id="rtoApprovalMaxPriceColumn"
+                            width="10rem"
+                            hAlign="End"
+                            sortProperty="maximumPrice">
+                            <Label text="Maximum Price"/>
+                            <table:template>
+                                <Text text="{maximumPrice}"/>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column
+                            id="rtoApprovalPercentColumn"
+                            width="8rem"
+                            hAlign="End"
+                            sortProperty="rtoPercent">
+                            <Label text="RTO %"/>
+                            <table:template>
+                                <Text text="{path:'rtoPercent', formatter:'.formatPercent'}"/>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column
+                            id="rtoApprovalFlatPriceColumn"
+                            width="9rem"
+                            hAlign="End">
+                            <Label text="Flat Price"/>
+                            <table:template>
+                                <Text text="{flatPriceValue}"/>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column
+                            id="rtoApprovalValidFromColumn"
+                            width="10rem"
+                            sortProperty="validFrom">
+                            <Label text="Valid From"/>
+                            <table:template>
+                                <Text text="{validFrom}"/>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column
+                            id="rtoApprovalStatusColumn"
+                            width="10rem">
+                            <Label text="Approval Status"/>
+                            <table:template>
+                                <ObjectStatus
+                                    text="{approvalStatus}"
+                                    state="Warning"/>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column
+                            id="rtoApprovalActionsColumn"
+                            width="17rem"
+                            hAlign="Center">
+                            <Label text="Actions"/>
+                            <table:template>
+                                <HBox
+                                    alignItems="Center"
+                                    justifyContent="Center">
+
+                                    <Button
+                                        text="Approve"
+                                        icon="sap-icon://accept"
+                                        type="Accept"
+                                        class="sapUiTinyMarginEnd"
+                                        enabled="{= ${approvalStatus} === 'SUBMITTED' }"
+                                        press=".onApprove"/>
+
+                                    <Button
+                                        text="Reject"
+                                        icon="sap-icon://decline"
+                                        type="Reject"
+                                        enabled="{= ${approvalStatus} === 'SUBMITTED' }"
+                                        press=".onReject"/>
+
+                                </HBox>
+                            </table:template>
+                        </table:Column>
+
+                    </table:columns>
+
+                </table:Table>
+
+            </VBox>
+
+        </content>
+    </Page>
 </mvc:View>

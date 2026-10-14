@@ -1,15 +1,241 @@
 <mvc:View
-controllerName="vpamasterapproval.controller.Parts"
-xmlns:mvc="sap.ui.core.mvc"
-xmlns="sap.m">
+    controllerName="vpamasterapproval.controller.Parts"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:table="sap.ui.table">
 
-<Page>
+    <Page id="partsApprovalPage">
 
-<content>
- <Text id="text5" text="WELCOME TO VEHICLE PRICING AUTOMATION"/>
+        <content>
 
-</content>
+            <VBox
+                id="partsApprovalContainer"
+                width="auto"
+                class="sapUiMediumMargin">
 
-</Page>
+                <!-- HEADER -->
+
+                <HBox
+                    id="partsApprovalHeader"
+                    alignItems="Center"
+                    class="sapUiSmallMarginBottom">
+
+                    <core:Icon
+                        id="partsApprovalIcon"
+                        src="sap-icon://shipping-status"
+                        size="2rem"
+                        class="sapUiSmallMarginEnd"/>
+
+                    <VBox id="partsApprovalTitleBox">
+
+                        <Title
+                            id="partsApprovalTitle"
+                            text="Parts Master"
+                            level="H2"/>
+
+                        <Text
+                            id="partsApprovalPendingCountText"
+                            text="{partsApprovalVM>/pendingCountText}"/>
+
+                    </VBox>
+
+                </HBox>
+
+
+                <!-- SEARCH TOOLBAR -->
+
+                <OverflowToolbar
+                    id="partsApprovalToolbar"
+                    width="100%">
+
+                    <SearchField
+                        id="partsApprovalSearchField"
+                        width="300px"
+                        placeholder="Search by Part Code or Description..."
+                        liveChange=".onSearch">
+
+                        <layoutData>
+                            <OverflowToolbarLayoutData
+                                priority="NeverOverflow"
+                                shrinkable="true"
+                                minWidth="150px"/>
+                        </layoutData>
+
+                    </SearchField>
+
+                    <Select
+                        id="partsApprovalFieldFilterSelect"
+                        width="170px"
+                        selectedKey="all"
+                        change=".onSearch">
+
+                        <items>
+                            <core:Item key="all" text="All Fields"/>
+                            <core:Item key="partCode" text="Part Code"/>
+                            <core:Item key="description" text="Description"/>
+                        </items>
+
+                    </Select>
+
+                    <ToolbarSpacer id="partsApprovalToolbarSpacer"/>
+
+                    <Button
+                        id="partsApprovalRefreshButton"
+                        text="Refresh"
+                        icon="sap-icon://refresh"
+                        type="Transparent"
+                        press=".onRefresh">
+
+                        <layoutData>
+                            <OverflowToolbarLayoutData priority="NeverOverflow"/>
+                        </layoutData>
+
+                    </Button>
+
+                </OverflowToolbar>
+
+
+                <!-- PARTS TABLE (only SUBMITTED records are requested from the server) -->
+
+                <table:Table
+                    id="partsApprovalTable"
+                    width="100%"
+                    visibleRowCount="10"
+                    selectionMode="None"
+                    enableColumnReordering="true"
+                    rowsUpdated=".onRowsUpdated"
+
+                    rows="{
+                        path: '/Parts',
+                        parameters: { $count: true },
+                        sorter: [
+                            { path: 'partCode' }
+                        ],
+                        filters: [
+                            {
+                                path: 'approvalStatus',
+                                operator: 'EQ',
+                                value1: 'SUBMITTED'
+                            }
+                        ]
+                    }">
+
+                    <table:columns>
+
+                        <table:Column
+                            id="partsApprovalPartCodeColumn"
+                            width="10rem"
+                            sortProperty="partCode"
+                            filterProperty="partCode">
+                            <Label text="Part Code"/>
+                            <table:template>
+                                <Text text="{partCode}"/>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column
+                            id="partsApprovalDescriptionColumn"
+                            width="16rem"
+                            sortProperty="description"
+                            filterProperty="description">
+                            <Label text="Description"/>
+                            <table:template>
+                                <Text text="{description}"/>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column
+                            id="partsApprovalMiyCostColumn"
+                            width="10rem"
+                            hAlign="End"
+                            sortProperty="miyCost">
+                            <Label text="MIY Cost"/>
+                            <table:template>
+                                <Text text="{miyCost}"/>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column
+                            id="partsApprovalMiyMarkupColumn"
+                            width="10rem"
+                            hAlign="End"
+                            sortProperty="miyMarkup">
+                            <Label text="MIY Markup"/>
+                            <table:template>
+                                <Text text="{miyMarkup}"/>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column
+                            id="partsApprovalPriceIndicatorColumn"
+                            width="12rem"
+                            sortProperty="priceIndicator"
+                            filterProperty="priceIndicator">
+                            <Label text="Price Indicator"/>
+                            <table:template>
+                                <Text text="{priceIndicator}"/>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column
+                            id="partsApprovalValidFromColumn"
+                            width="10rem"
+                            sortProperty="validFrom">
+                            <Label text="Valid From"/>
+                            <table:template>
+                                <Text text="{validFrom}"/>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column
+                            id="partsApprovalStatusColumn"
+                            width="10rem">
+                            <Label text="Approval Status"/>
+                            <table:template>
+                                <ObjectStatus
+                                    text="{approvalStatus}"
+                                    state="Warning"/>
+                            </table:template>
+                        </table:Column>
+
+                        <table:Column
+                            id="partsApprovalActionsColumn"
+                            width="17rem"
+                            hAlign="Center">
+                            <Label text="Actions"/>
+                            <table:template>
+                                <HBox
+                                    alignItems="Center"
+                                    justifyContent="Center">
+
+                                    <Button
+                                        text="Approve"
+                                        icon="sap-icon://accept"
+                                        type="Accept"
+                                        class="sapUiTinyMarginEnd"
+                                        enabled="{= ${approvalStatus} === 'SUBMITTED' }"
+                                        press=".onApprove"/>
+
+                                    <Button
+                                        text="Reject"
+                                        icon="sap-icon://decline"
+                                        type="Reject"
+                                        enabled="{= ${approvalStatus} === 'SUBMITTED' }"
+                                        press=".onReject"/>
+
+                                </HBox>
+                            </table:template>
+                        </table:Column>
+
+                    </table:columns>
+
+                </table:Table>
+
+            </VBox>
+
+        </content>
+
+    </Page>
 
 </mvc:View>
