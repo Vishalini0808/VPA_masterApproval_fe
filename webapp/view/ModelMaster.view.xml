@@ -1,231 +1,153 @@
 <mvc:View
-controllerName="vpamasterapproval.controller.ModelMaster"
-xmlns:mvc="sap.ui.core.mvc"
-xmlns="sap.m"
-xmlns:core="sap.ui.core">
-
-
-<Page id="page" title="Model Master" showHeader="true"  class="modelMasterPage">
-
-<content >
-
-<VBox id ="modelmastercontainer" width="100%" class="sapUiMediumMargin">
-
-<HBox id="hbox" alignItems="Center" class="sapUiSmallMarginBottom">
-
-<core:Icon id="modelMasterIcon" src="sap-icon://car-rental" size="2rem"  class="sapUiSmallMarginEnd"/>
-
-<VBox id="vbox">
-
-<Title id="modeltitle" text="Model Master" level="H2"/>
-
-<Text id="pendingCountText"  text="25 records pending for approval"/>
-
-</VBox>
-
-</HBox>
-
-<Toolbar id="modelmasterToolbar" class="modelMasterToolbar">
-
-    <SearchField id="modelSearchField" width="300px" placeholder="Search by Model Code or Description..." liveChange=".onSearch"/>
-
-    <Select id="fieldFilterSelect" width="170px">
-        <items>
-            <core:Item id="allFieldsItem" key="all" text="All Fields"/>
-            <core:Item id="modelCodeItem" key="modelCode" text="Model Code"/>
-            <core:Item id="descriptionItem" key="description" text="Description"/>
-            <core:Item id="engineTypeItem" key="engineType" text="Engine Type"/>
-        </items>
-    </Select>
-
-    <ToolbarSpacer id="toolspacer"/>
-
-    <Button id="refreshButton" text="Refresh" icon="sap-icon://refresh" type="Transparent"   press=".onRefresh"/>
-
-    <Button id="importButton" text="Import" icon="sap-icon://upload" type="Transparent"  press=".onImport"/>
-
-</Toolbar>
-
-
-<Table id="model" width="100%"    inset="false" growing="false" fixedLayout="false" class="modelMasterTable">
-
-
-
-     <columns>
-                       
-                       
-     <Column id="modelCodeColumn" width="10rem">
-
-          <Text id="modelcode" text="Model Code"/>
-
-     </Column>
-
-    <Column id="modelDescriptionColumn"  width="12rem">
-
-        <Text id="modeldesc" text="Model Description"/>
-
-    </Column>
-    
-    <Column id="engineTypeColumn"  width="9rem">
-
-       <Text id="enginetype" text="Engine Type"/>
-
-    </Column>
-    
-    <Column id="ccWattColumn" width="8rem">
-
-          <Text id="cc" text="CC / Watt"/>
-
-    </Column>
-    
-     <Column id="gstPercentColumn" width="7rem">
-
-        <Text id="gst" text="GST %"/>
-
-     </Column>
-     
-     <Column id="dealerMarginColumn" width="10rem">
-
-        <Text id="dealer" text="Dealer Margin %"/>
-
-    </Column>
-    
-    <Column id="csdDiscountColumn"  width="10rem">
-
-        <Text id="csd" text="CSD Discount %"/>
-
-    </Column>
-
-
-    <Column id="csdGstColumn" width="8rem">
-
-      <Text id="csdgst" text="CSD GST %"/>
-
-    </Column>
-
-
-    <Column id="orderTypeColumn"  width="8rem">
-
-        <Text id="ordertype" text="Order Type"/>
-   
-    </Column>
-
-    <Column id="statusColumn" width="8rem">
-
-        <Text id="status" text="Status"/>
-
-    </Column>
-
-
-    <Column id="approvalStatusColumn" width="10rem">
-
-        <Text id="approval" text="Approval Status"/>
-
-    </Column>
-    
-    <Column id="validFromColumn" width="9rem">
-
-       <Text id="valid" text="Valid From"/>
-
-    </Column>
-
-
-    <Column id="gemValueColumn" width="9rem">
-
-        <Text id="gem" text="GeM Value"/>
-
-   </Column>
-
-</columns>
-
-
-
-<items>
-
-    <ColumnListItem id="modelMasterRow">
-
-        <cells>
-
-            <Text id="modelCodeText" text="{modelCode}"/>
-
-            <Text id="modelDescriptionText" text="{modelDescription}"/>
-
-            <Text id="engineTypeText" text="{engineType}"/>
-
-            <Text id="ccWattText" text="{ccWatt}"/>
-
-            <Text id="gstPercentText" text="{gstPercent}"/>
-
-            <Text id="dealerMarginText" text="{dealerMarginPercent}"/>
-
-            <Text id="csdDiscountText" text="{csdDiscountPercent}"/>
-
-            <Text id="csdGstText" text="{csdGstPercent}"/>
-
-            <Text id="orderTypeText" text="{orderType}"/>
-
-            <ObjectStatus id="statusObjectStatus" text="{status}"/>
-
-            <ObjectStatus id="approvalStatusObjectStatus" text="{approvalStatus}"/>
-
-            <Text id="validFromText" text="{validFrom}"/>
-
-            <Text id="gemValueText" text="{gemValue}"/>
-
-        </cells>
-
-    </ColumnListItem>
-
-</items>
-
-</Table>
-
-<HBox id="paginationContainer" justifyContent="SpaceBetween" alignItems="Center" class="paginationContainer">
-
-    <HBox id="itemsPerPageBox" alignItems="Center">
-
-        <Text id="itemsPerPageLabel" text="Items per page:"/>
-
-        <Select id="itemsPerPageSelect" selectedKey="10" width="80px" change=".onItemsPerPageChange">
-
-            <items>
-                <core:Item id="itemsPerPage10" key="10" text="10"/>
-                <core:Item id="itemsPerPage20" key="20" text="20"/>
-                <core:Item id="itemsPerPage50" key="50" text="50"/>
-            </items>
-
-        </Select>
-
-    </HBox>
-
-
-    <HBox id="paginationRight" alignItems="Center">
-
-        <Text id="pageInfoText" text="1–10 of 25"/>
-
-        <Button id="firstPageButton" icon="sap-icon://media-rewind" type="Transparent" tooltip="First Page" press=".onFirstPage"/>
-
-        <Button id="previousPageButton" icon="sap-icon://navigation-left-arrow" type="Transparent" tooltip="Previous Page" press=".onPreviousPage"/>
-
-        <Button id="page1Button" text="1" type="Emphasized" press=".onPagePress"/>
-
-        <Button id="page2Button" text="2" type="Transparent" press=".onPagePress"/>
-
-        <Button id="page3Button" text="3" type="Transparent" press=".onPagePress"/>
-
-        <Button id="nextPageButton" icon="sap-icon://navigation-right-arrow" type="Transparent" tooltip="Next Page" press=".onNextPage"/>
-
-        <Button id="lastPageButton" icon="sap-icon://media-forward" type="Transparent" tooltip="Last Page" press=".onLastPage"/>
-
-    </HBox>
-
-</HBox>
-
-</VBox>
-
-</content>
-
-
-</Page>
-
+    controllerName="vpamasterapproval.controller.ModelMaster"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:t="sap.ui.table"
+    xmlns:rowmodes="sap.ui.table.rowmodes">
+ 
+    <Page id="page" showHeader="false" class="sapUiSizeCozy modelMasterPage">
+        <content>
+            <VBox id="modelmastercontainer" class="modelMasterContainer">
+ 
+                <!-- Header -->
+                <HBox id="hbox" alignItems="Center" class="sapUiSmallMarginBottom">
+                    <HBox id="modelMasterIconBox" alignItems="Center" justifyContent="Center" class="modelHeaderIconBox">
+                        <core:Icon id="modelMasterIcon" src="sap-icon://car-rental" size="1.75rem"/>
+                    </HBox>
+                    <VBox id="vbox">
+                        <Title id="modeltitle" text="Model Master" level="H2" class="modelHeaderTitle"/>
+                        <Text id="pendingCountText" text="{pager>/total} records pending for approval" class="modelHeaderSub"/>
+                    </VBox>
+                </HBox>
+ 
+                <!-- Search + filter + refresh -->
+                <Toolbar id="modelmasterToolbar" class="modelMasterToolbar">
+                    <SearchField id="modelSearchField" width="32rem" class="modelSearch"
+                        placeholder="Search by Model Code or Description..."
+                        liveChange=".onSearch"/>
+                    <Select id="fieldFilterSelect" width="12.5rem" class="modelSelect" change=".onFieldFilterChange">
+                        <items>
+                            <core:Item id="allFieldsItem" key="all" text="All Fields"/>
+                            <core:Item id="modelCodeItem" key="modelCode" text="Model Code"/>
+                            <core:Item id="descriptionItem" key="modelDescription" text="Description"/>
+                            <core:Item id="engineTypeItem" key="engineType" text="Engine Type"/>
+                        </items>
+                    </Select>
+                    <ToolbarSpacer id="toolspacer"/>
+                    <Button id="refreshButton" text="Refresh" icon="sap-icon://refresh" class="modelOutlineBtn" press=".onRefresh"/>
+                </Toolbar>
+ 
+                <VBox id="modelCard" class="modelCard">
+ 
+                <!-- Table: only SUBMITTED records, $count gives the total for the pager -->
+                <t:Table id="model"
+                    rows="{path: '/Models', parameters: {$count: true}, filters: [{path: 'approvalStatus', operator: 'EQ', value1: 'SUBMITTED'}]}"
+                    selectionMode="None"
+                    rowsUpdated=".onRowsUpdated"
+                    class="modelMasterTable">
+ 
+                    <t:rowMode>
+                        <rowmodes:Fixed id="modelRowMode" rowCount="10"/>
+                    </t:rowMode>
+ 
+                    <t:columns>
+                        <t:Column id="rowNumberColumn" width="3.5rem">
+                            <t:label><Label id="rowNumberLabel" text="#"/></t:label>
+                            <t:template><Text id="rowNumberText" text="" wrapping="false"/></t:template>
+                        </t:Column>
+ 
+                        <t:Column id="modelCodeColumn" width="13rem" sortProperty="modelCode" filterProperty="modelCode">
+                            <t:label><Label id="modelcode" text="Model Code"/></t:label>
+                            <t:template><Text id="modelCodeText" text="{modelCode}" wrapping="false"/></t:template>
+                        </t:Column>
+ 
+                        <t:Column id="modelDescriptionColumn" width="12rem" sortProperty="modelDescription" filterProperty="modelDescription">
+                            <t:label><Label id="modeldesc" text="Description"/></t:label>
+                            <t:template><Text id="modelDescriptionText" text="{modelDescription}" wrapping="false"/></t:template>
+                        </t:Column>
+ 
+                        <t:Column id="engineTypeColumn" width="8rem" sortProperty="engineType" filterProperty="engineType">
+                            <t:label><Label id="enginetype" text="Engine Type"/></t:label>
+                            <t:template><Text id="engineTypeText" text="{engineType}" wrapping="false"/></t:template>
+                        </t:Column>
+ 
+                        <t:Column id="ccWattColumn" width="7rem" sortProperty="ccWatt">
+                            <t:label><Label id="cc" text="CC / Watt"/></t:label>
+                            <t:template><Text id="ccWattText" text="{ccWatt}" wrapping="false"/></t:template>
+                        </t:Column>
+ 
+                        <t:Column id="gstPercentColumn" width="6rem" sortProperty="gstPercent">
+                            <t:label><Label id="gst" text="GST %"/></t:label>
+                            <t:template><Text id="gstPercentText" text="{gstPercent}" wrapping="false"/></t:template>
+                        </t:Column>
+ 
+                        <t:Column id="dealerMarginColumn" width="9rem" sortProperty="dealerMarginPercent">
+                            <t:label><Label id="dealer" text="Dealer Margin %"/></t:label>
+                            <t:template><Text id="dealerMarginText" text="{dealerMarginPercent}" wrapping="false"/></t:template>
+                        </t:Column>
+ 
+                        <t:Column id="csdDiscountColumn" width="9rem" sortProperty="csdDiscountPercent">
+                            <t:label><Label id="csd" text="CSD Discount %"/></t:label>
+                            <t:template><Text id="csdDiscountText" text="{csdDiscountPercent}" wrapping="false"/></t:template>
+                        </t:Column>
+ 
+                        <t:Column id="approvalStatusColumn" width="8rem" sortProperty="approvalStatus">
+                            <t:label><Label id="approval" text="Status"/></t:label>
+                            <t:template>
+                                <ObjectStatus id="approvalStatusObjectStatus"
+                                    class="statusBadge"
+                                    text="{path: 'approvalStatus', formatter: '.formatStatusText'}"
+                                    state="{path: 'approvalStatus', formatter: '.formatStatusState'}"/>
+                            </t:template>
+                        </t:Column>
+ 
+                        <t:Column id="actionsColumn" width="8rem">
+                            <t:label><Label id="actionsLabel" text="Actions"/></t:label>
+                            <t:template>
+                                <HBox id="actionsBox" justifyContent="Start" alignItems="Center">
+                                    <Button id="approveButton" icon="sap-icon://accept" type="Default"
+                                        tooltip="Approve" press=".onApprove" class="approveBtn sapUiTinyMarginEnd"/>
+                                    <Button id="rejectButton" icon="sap-icon://decline" type="Default"
+                                        tooltip="Reject" press=".onReject" class="rejectBtn"/>
+                                </HBox>
+                            </t:template>
+                        </t:Column>
+                    </t:columns>
+                </t:Table>
+ 
+                <!-- Pagination -->
+                <HBox id="paginationContainer" justifyContent="End" alignItems="Center" class="paginationContainer sapUiSmallMarginTop">
+ 
+                    <Text id="itemsPerPageLabel" text="Items per page:" class="sapUiSmallMarginEnd"/>
+                    <Select id="itemsPerPageSelect" selectedKey="10" width="6rem" change=".onItemsPerPageChange" class="modelSelect sapUiMediumMarginEnd">
+                        <items>
+                            <core:Item id="itemsPerPage5" key="5" text="5"/>
+                            <core:Item id="itemsPerPage10" key="10" text="10"/>
+                            <core:Item id="itemsPerPage20" key="20" text="20"/>
+                            <core:Item id="itemsPerPage50" key="50" text="50"/>
+                        </items>
+                    </Select>
+ 
+                    <Text id="pageInfoText" text="{pager>/from} – {pager>/to} of {pager>/total}" class="sapUiMediumMarginEnd"/>
+ 
+                    <Button id="firstPageButton" icon="sap-icon://close-command-field" type="Transparent"
+                        tooltip="First Page" enabled="{pager>/prevEnabled}" press=".onFirstPage"/>
+                    <Button id="previousPageButton" icon="sap-icon://navigation-left-arrow" type="Transparent"
+                        tooltip="Previous Page" enabled="{pager>/prevEnabled}" press=".onPreviousPage"/>
+                    <Button id="page1Button" text="{pager>/p1}" visible="{pager>/p1Visible}" type="{pager>/p1Type}" press=".onPagePress"/>
+                    <Button id="page2Button" text="{pager>/p2}" visible="{pager>/p2Visible}" type="{pager>/p2Type}" press=".onPagePress"/>
+                    <Button id="page3Button" text="{pager>/p3}" visible="{pager>/p3Visible}" type="{pager>/p3Type}" press=".onPagePress"/>
+                    <Button id="nextPageButton" icon="sap-icon://navigation-right-arrow" type="Transparent"
+                        tooltip="Next Page" enabled="{pager>/nextEnabled}" press=".onNextPage"/>
+                    <Button id="lastPageButton" icon="sap-icon://open-command-field" type="Transparent"
+                        tooltip="Last Page" enabled="{pager>/nextEnabled}" press=".onLastPage"/>
+                </HBox>
+ 
+                </VBox>
+ 
+            </VBox>
+        </content>
+    </Page>
+ 
 </mvc:View>
