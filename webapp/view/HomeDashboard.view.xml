@@ -94,8 +94,20 @@ xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds">
             <!-- Pie chart -->
             <VBox id="approvalPieChartContainer"  width="50%" class="approvalPieChartContainer">
 
-                <viz:VizFrame id="approvalStatusPieChart" vizType="pie"  width="100%" height="300px"   uiConfig="{applicationSet:'fiori'}">
-
+                <viz:VizFrame
+                    id="approvalStatusPieChart"
+                    vizType="pie"
+                    width="100%"
+                    height="300px"
+                    uiConfig="{applicationSet:'fiori'}"
+                    vizProperties="{
+                        title: {
+                            visible: false
+                        },
+                        legend: {
+                            visible: true
+                        }
+                    }">
                     <viz:dataset>
                         <viz.data:FlattenedDataset  data="{approvalStatus>/items}">
 
@@ -169,8 +181,30 @@ xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds">
 
         <Text  text="GeM Value by Vehicle Model" class="chartAxisLabel"/>
 
-        <viz:VizFrame  id="vehiclePriceTrendChart" vizType="line" width="100%" height="320px" uiConfig="{applicationSet:'fiori'}">
-
+            <viz:VizFrame
+                id="vehiclePriceTrendChart"
+                vizType="line"
+                width="100%"
+                height="320px"
+                uiConfig="{applicationSet:'fiori'}"
+                vizProperties="{
+                    title: {
+                        visible: false
+                    },
+                    legend: {
+                        visible: true
+                    },
+                    categoryAxis: {
+                        title: {
+                            visible: true
+                        }
+                    },
+                    valueAxis: {
+                        title: {
+                            visible: true
+                        }
+                    }
+                }">
             <viz:dataset>
                 <viz.data:FlattenedDataset
                     data="{priceModel>/items}">
