@@ -6,127 +6,222 @@
     xmlns:t="sap.ui.table"
     xmlns:rowmodes="sap.ui.table.rowmodes">
 
-    <Page id="mtoPage" showHeader="false" class="sapUiSizeCozy modelMasterPage">
-        <content>
-            <VBox id="mtoContainer" class="modelMasterContainer">
+    <Page id="mtoPage" showHeader="false">
 
-                <!-- Header -->
-                <HBox id="mtoHeader" alignItems="Center" class="sapUiSmallMarginBottom">
-                    <HBox id="mtoIconBox" alignItems="Center" justifyContent="Center" class="modelHeaderIconBox">
-                        <core:Icon id="mtoIcon" src="sap-icon://database" size="1.75rem"/>
-                    </HBox>
+        <content>
+
+            <VBox
+                id="mtoContainer"
+                width="auto"
+                class="sapUiMediumMargin">
+
+                <!-- HEADER -->
+
+                <HBox
+                    id="mtoHeader"
+                    alignItems="Center"
+                    class="sapUiSmallMarginBottom">
+
+                    <core:Icon
+                        id="mtoIcon"
+                        src="sap-icon://database"
+                        size="2rem"
+                        class="sapUiSmallMarginEnd"/>
+
                     <VBox id="mtoTitleBox">
-                        <Title id="mtoTitle" text="MTO Configurations" level="H2" class="modelHeaderTitle"/>
-                        <Text id="mtoCountText" text="{pager>/total} records pending for approval" class="modelHeaderSub"/>
+
+                        <Title
+                            id="mtoTitle"
+                            text="MTO Configurations"
+                            level="H2"/>
+
+                        <Text
+                            id="mtoCountText"
+                            text="{pager>/total} records pending for approval"/>
+
                     </VBox>
+
                 </HBox>
 
-                <!-- Search + filter + refresh -->
-                <Toolbar id="mtoToolbar" class="modelMasterToolbar">
-                    <SearchField id="mtoSearchField" width="32rem" class="modelSearch"
+
+                <!-- SEARCH TOOLBAR -->
+
+                <OverflowToolbar
+                    id="mtoToolbar"
+                    width="100%">
+
+                    <SearchField
+                        id="mtoSearchField"
+                        width="300px"
                         placeholder="Search by MTO Model Code or Reference Model..."
-                        liveChange=".onSearch"/>
-                    <Select id="mtoFieldFilterSelect" width="12.5rem" class="modelSelect" change=".onFieldFilterChange">
+                        liveChange=".onSearch">
+
+                        <layoutData>
+                            <OverflowToolbarLayoutData
+                                priority="NeverOverflow"
+                                shrinkable="true"
+                                minWidth="150px"/>
+                        </layoutData>
+
+                    </SearchField>
+
+                    <Select
+                        id="mtoFieldFilterSelect"
+                        width="200px"
+                        selectedKey="all"
+                        change=".onFieldFilterChange">
+
                         <items>
                             <core:Item id="mtoAllItem" key="all" text="All Fields"/>
                             <core:Item id="mtoCodeItem" key="mtoModelCode" text="MTO Model Code"/>
                             <core:Item id="mtoRefItem" key="referenceMTSModel_modelCode" text="Reference MTS Model"/>
                         </items>
+
                     </Select>
+
                     <ToolbarSpacer id="mtoSpacer"/>
-                    <Button id="mtoRefreshButton" text="Refresh" icon="sap-icon://refresh" class="modelOutlineBtn" press=".onRefresh"/>
-                </Toolbar>
 
-                <VBox id="mtoCard" class="modelCard">
+                    <Button
+                        id="mtoRefreshButton"
+                        text="Refresh"
+                        icon="sap-icon://refresh"
+                        type="Transparent"
+                        press=".onRefresh">
 
-                    <t:Table id="mtoTable"
-                        rows="{path: '/MTOConfigurations', parameters: {$count: true}, filters: [{path: 'approvalStatus', operator: 'EQ', value1: 'SUBMITTED'}]}"
-                        selectionMode="None"
-                        rowsUpdated=".onRowsUpdated"
-                        class="modelMasterTable">
+                        <layoutData>
+                            <OverflowToolbarLayoutData priority="NeverOverflow"/>
+                        </layoutData>
 
-                        <t:rowMode>
-                            <rowmodes:Fixed id="mtoRowMode" rowCount="10"/>
-                        </t:rowMode>
+                    </Button>
 
-                        <t:columns>
-                            <t:Column id="mtoRowNumberColumn" width="3.5rem">
-                                <t:label><Label id="mtoRowNumberLabel" text="#"/></t:label>
-                                <t:template><Text id="mtoRowNumberText" text="" wrapping="false"/></t:template>
-                            </t:Column>
+                </OverflowToolbar>
 
-                            <t:Column id="mtoModelCodeColumn" width="16rem" sortProperty="mtoModelCode" filterProperty="mtoModelCode">
-                                <t:label><Label id="mtoModelCodeLabel" text="MTO Model Code"/></t:label>
-                                <t:template><Text id="mtoModelCodeText" text="{mtoModelCode}" wrapping="false"/></t:template>
-                            </t:Column>
 
-                            <t:Column id="mtoValidFromColumn" width="10rem" sortProperty="validFrom">
-                                <t:label><Label id="mtoValidFromLabel" text="Valid From"/></t:label>
-                                <t:template>
-                                    <Text id="mtoValidFromText" wrapping="false"
-                                        text="{path: 'validFrom', type: 'sap.ui.model.odata.type.Date'}"/>
-                                </t:template>
-                            </t:Column>
+                <!-- MTO TABLE (only SUBMITTED records are requested from the server) -->
 
-                            <t:Column id="mtoRefModelColumn" width="16rem" sortProperty="referenceMTSModel_modelCode" filterProperty="referenceMTSModel_modelCode">
-                                <t:label><Label id="mtoRefModelLabel" text="Reference MTS Model"/></t:label>
-                                <t:template><Text id="mtoRefModelText" text="{referenceMTSModel_modelCode}" wrapping="false"/></t:template>
-                            </t:Column>
+                <t:Table
+                    id="mtoTable"
+                    width="100%"
+                    selectionMode="None"
+                    enableColumnReordering="true"
+                    rowsUpdated=".onRowsUpdated"
 
-                            <t:Column id="mtoStatusColumn" width="9rem" sortProperty="approvalStatus">
-                                <t:label><Label id="mtoStatusLabel" text="Status"/></t:label>
-                                <t:template>
-                                    <ObjectStatus id="mtoStatusObjectStatus"
-                                        class="statusBadge"
-                                        text="{path: 'approvalStatus', formatter: '.formatStatusText'}"
-                                        state="{path: 'approvalStatus', formatter: '.formatStatusState'}"/>
-                                </t:template>
-                            </t:Column>
+                    rows="{
+                        path: '/MTOConfigurations',
+                        parameters: { $count: true },
+                        filters: [
+                            {
+                                path: 'approvalStatus',
+                                operator: 'EQ',
+                                value1: 'SUBMITTED'
+                            }
+                        ]
+                    }">
 
-                            <t:Column id="mtoActionsColumn" width="8rem">
-                                <t:label><Label id="mtoActionsLabel" text="Actions"/></t:label>
-                                <t:template>
-                                    <HBox id="mtoActionsBox" justifyContent="Start" alignItems="Center">
-                                        <Button id="mtoApproveButton" icon="sap-icon://accept" type="Default"
-                                            tooltip="Approve" press=".onApprove" class="approveBtn sapUiTinyMarginEnd"/>
-                                        <Button id="mtoRejectButton" icon="sap-icon://decline" type="Default"
-                                            tooltip="Reject" press=".onReject" class="rejectBtn"/>
-                                    </HBox>
-                                </t:template>
-                            </t:Column>
-                        </t:columns>
-                    </t:Table>
+                    <t:rowMode>
+                        <rowmodes:Fixed id="mtoRowMode" rowCount="10"/>
+                    </t:rowMode>
 
-                    <!-- Pagination -->
-                    <HBox id="mtoPagination" justifyContent="End" alignItems="Center" class="paginationContainer sapUiSmallMarginTop">
-                        <Text id="mtoItemsPerPageLabel" text="Items per page:" class="sapUiSmallMarginEnd"/>
-                        <Select id="mtoItemsPerPageSelect" selectedKey="10" width="6rem" change=".onItemsPerPageChange" class="modelSelect sapUiMediumMarginEnd">
-                            <items>
-                                <core:Item id="mtoPer5" key="5" text="5"/>
-                                <core:Item id="mtoPer10" key="10" text="10"/>
-                                <core:Item id="mtoPer20" key="20" text="20"/>
-                                <core:Item id="mtoPer50" key="50" text="50"/>
-                            </items>
-                        </Select>
+                    <t:columns>
 
-                        <Text id="mtoPageInfoText" text="{pager>/from} – {pager>/to} of {pager>/total}" class="sapUiMediumMarginEnd"/>
+                        <t:Column
+                            id="mtoRowNumberColumn"
+                            width="4rem"
+                            hAlign="End">
+                            <Label id="mtoRowNumberLabel" text="#"/>
+                            <t:template>
+                                <Text id="mtoRowNumberText" text="" wrapping="false"/>
+                            </t:template>
+                        </t:Column>
 
-                        <Button id="mtoFirstPage" icon="sap-icon://close-command-field" type="Transparent"
-                            tooltip="First Page" enabled="{pager>/prevEnabled}" press=".onFirstPage"/>
-                        <Button id="mtoPrevPage" icon="sap-icon://navigation-left-arrow" type="Transparent"
-                            tooltip="Previous Page" enabled="{pager>/prevEnabled}" press=".onPreviousPage"/>
-                        <Button id="mtoPage1" text="{pager>/p1}" visible="{pager>/p1Visible}" type="{pager>/p1Type}" press=".onPagePress"/>
-                        <Button id="mtoPage2" text="{pager>/p2}" visible="{pager>/p2Visible}" type="{pager>/p2Type}" press=".onPagePress"/>
-                        <Button id="mtoPage3" text="{pager>/p3}" visible="{pager>/p3Visible}" type="{pager>/p3Type}" press=".onPagePress"/>
-                        <Button id="mtoNextPage" icon="sap-icon://navigation-right-arrow" type="Transparent"
-                            tooltip="Next Page" enabled="{pager>/nextEnabled}" press=".onNextPage"/>
-                        <Button id="mtoLastPage" icon="sap-icon://open-command-field" type="Transparent"
-                            tooltip="Last Page" enabled="{pager>/nextEnabled}" press=".onLastPage"/>
-                    </HBox>
+                        <t:Column
+                            id="mtoModelCodeColumn"
+                            width="16rem"
+                            sortProperty="mtoModelCode"
+                            filterProperty="mtoModelCode">
+                            <Label id="mtoModelCodeLabel" text="MTO Model Code"/>
+                            <t:template>
+                                <Text id="mtoModelCodeText" text="{mtoModelCode}" wrapping="false"/>
+                            </t:template>
+                        </t:Column>
 
-                </VBox>
+                        <t:Column
+                            id="mtoValidFromColumn"
+                            width="10rem"
+                            sortProperty="validFrom">
+                            <Label id="mtoValidFromLabel" text="Valid From"/>
+                            <t:template>
+                                <Text
+                                    id="mtoValidFromText"
+                                    wrapping="false"
+                                    text="{path: 'validFrom', type: 'sap.ui.model.odata.type.Date'}"/>
+                            </t:template>
+                        </t:Column>
+
+                        <t:Column
+                            id="mtoRefModelColumn"
+                            width="16rem"
+                            sortProperty="referenceMTSModel_modelCode"
+                            filterProperty="referenceMTSModel_modelCode">
+                            <Label id="mtoRefModelLabel" text="Reference MTS Model"/>
+                            <t:template>
+                                <Text id="mtoRefModelText" text="{referenceMTSModel_modelCode}" wrapping="false"/>
+                            </t:template>
+                        </t:Column>
+
+                        <t:Column
+                            id="mtoStatusColumn"
+                            width="10rem"
+                            sortProperty="approvalStatus">
+                            <Label id="mtoStatusLabel" text="Approval Status"/>
+                            <t:template>
+                                <ObjectStatus
+                                    id="mtoStatusObjectStatus"
+                                    text="{path: 'approvalStatus', formatter: '.formatStatusText'}"
+                                    state="{path: 'approvalStatus', formatter: '.formatStatusState'}"/>
+                            </t:template>
+                        </t:Column>
+
+                        <t:Column
+                            id="mtoActionsColumn"
+                            width="17rem"
+                            hAlign="Center">
+                            <Label id="mtoActionsLabel" text="Actions"/>
+                            <t:template>
+                                <HBox
+                                    id="mtoActionsBox"
+                                    alignItems="Center"
+                                    justifyContent="Center">
+
+                                    <Button
+                                        id="mtoApproveButton"
+                                        text="Approve"
+                                        icon="sap-icon://accept"
+                                        type="Accept"
+                                        class="sapUiTinyMarginEnd"
+                                        enabled="{= ${approvalStatus} === 'SUBMITTED' }"
+                                        press=".onApprove"/>
+
+                                    <Button
+                                        id="mtoRejectButton"
+                                        text="Reject"
+                                        icon="sap-icon://decline"
+                                        type="Reject"
+                                        enabled="{= ${approvalStatus} === 'SUBMITTED' }"
+                                        press=".onReject"/>
+
+                                </HBox>
+                            </t:template>
+                        </t:Column>
+
+                    </t:columns>
+
+                </t:Table>
+
             </VBox>
+
         </content>
+
     </Page>
 
 </mvc:View>
