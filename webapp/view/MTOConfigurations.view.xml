@@ -74,7 +74,7 @@
                         <items>
                             <core:Item id="mtoAllItem" key="all" text="All Fields"/>
                             <core:Item id="mtoCodeItem" key="mtoModelCode" text="MTO Model Code"/>
-                            <core:Item id="mtoRefItem" key="referenceMTSModel_modelCode" text="Reference MTS Model"/>
+                            <core:Item id="mtoRefItem" key="referenceModel" text="Reference MTS Model"/>
                         </items>
 
                     </Select>
