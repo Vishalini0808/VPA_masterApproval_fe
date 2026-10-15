@@ -3,162 +3,125 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    "sap/ui/model/FilterType",
     "sap/m/MessageToast"
-], function (Controller, JSONModel, Filter, FilterOperator, FilterType, MessageToast) {
+], function (Controller, JSONModel, Filter, FilterOperator, MessageToast) {
     "use strict";
 
     return Controller.extend("vpamasterapproval.controller.MTOConfigurations", {
 
         onInit: function () {
-            this._iPageSize = 10;
+            this._aConfigs = [];   // raw configurations (with parts) read from the service
             this._sQuery = "";
 
-            this.getView().setModel(new JSONModel({
-                total: 0, from: 0, to: 0, page: 1, pages: 1,
-                prevEnabled: false, nextEnabled: false,
-                p1: 1, p2: 2, p3: 3,
-                p1Visible: true, p2Visible: false, p3Visible: false,
-                p1Type: "Emphasized", p2Type: "Transparent", p3Type: "Transparent"
-            }), "pager");
+            // JSON model that holds the tree: MTO configuration -> parts
+            this.getView().setModel(new JSONModel({ count: 0, nodes: [] }), "tree");
         },
 
-        /* ---------- table: row numbers + pager state ---------- */
+        /* ---------- data loading (called by masterApproval controller on navigation) ---------- */
 
-        onRowsUpdated: function () {
-            var oTable = this.byId("mtoTable");
-            var oBinding = oTable.getBinding("rows");
-            if (!oBinding) {
+        loadData: async function () {
+            var oView = this.getView();
+            var oModel = oView.getModel();
+
+            if (!oModel) {
                 return;
             }
 
-            oTable.getRows().forEach(function (oRow) {
-                var oContext = oRow.getBindingContext();
-                oRow.getCells()[0].setText(oContext ? String(oContext.getIndex() + 1) : "");
-            });
+            oView.setBusy(true);
 
-            var iTotal = oBinding.getCount();
-            if (iTotal === undefined) {
-                iTotal = oBinding.getLength();
+            try {
+                // only SUBMITTED configurations, each with its parts and part details
+                var oListBinding = oModel.bindList(
+                    "/MTOConfigurations",
+                    null,
+                    [],
+                    [new Filter("approvalStatus", FilterOperator.EQ, "SUBMITTED")],
+                    {
+                        $expand: {
+                            parts: {
+                                $expand: { part: { $select: ["partCode", "description"] } }
+                            }
+                        }
+                    }
+                );
+
+                var aContexts = await oListBinding.requestContexts(0, 1000);
+                this._aConfigs = aContexts.map(function (oContext) {
+                    return oContext.getObject();
+                });
+                oListBinding.destroy();
+
+                this._buildTree();
+            } catch (oError) {
+                MessageToast.show("Loading failed: " + oError.message);
+            } finally {
+                oView.setBusy(false);
             }
-            var iSize = this._iPageSize;
-            var iFirst = oTable.getFirstVisibleRow();
-            var iPages = Math.max(1, Math.ceil(iTotal / iSize));
-            var iPage = Math.min(Math.floor(iFirst / iSize) + 1, iPages);
-            var iStart = Math.min(Math.max(iPage - 1, 1), Math.max(1, iPages - 2));
+        },
 
-            var oData = {
-                total: iTotal,
-                from: iTotal ? iFirst + 1 : 0,
-                to: Math.min(iFirst + iSize, iTotal),
-                page: iPage,
-                pages: iPages,
-                prevEnabled: iPage > 1,
-                nextEnabled: iPage < iPages
-            };
-            [0, 1, 2].forEach(function (i) {
-                var n = iStart + i;
-                oData["p" + (i + 1)] = n;
-                oData["p" + (i + 1) + "Visible"] = n <= iPages;
-                oData["p" + (i + 1) + "Type"] = n === iPage ? "Emphasized" : "Transparent";
+        /* ---------- build / filter the tree ---------- */
+
+        _buildTree: function () {
+            var sQuery = (this._sQuery || "").toLowerCase();
+            var sKey = this.byId("mtoFieldFilterSelect").getSelectedKey();
+
+            var aNodes = this._aConfigs.map(function (oConfig) {
+                return {
+                    type: "config",
+                    name: oConfig.mtoModelCode,
+                    mtoModelCode: oConfig.mtoModelCode,
+                    referenceModel: oConfig.referenceMTSModel_modelCode || "",
+                    validFrom: oConfig.validFrom || "",
+                    status: oConfig.approvalStatus,
+                    children: (oConfig.parts || []).map(function (oPart) {
+                        var sCode = oPart.part_partCode || (oPart.part && oPart.part.partCode) || "";
+                        return {
+                            type: "part",
+                            name: sCode,
+                            description: (oPart.part && oPart.part.description) || "",
+                            quantity: oPart.quantity
+                        };
+                    })
+                };
+            }).filter(function (oNode) {
+                if (!sQuery) {
+                    return true;
+                }
+                var aFields = sKey === "all" ? ["mtoModelCode", "referenceModel"] : [sKey];
+                return aFields.some(function (sField) {
+                    return String(oNode[sField] || "").toLowerCase().indexOf(sQuery) > -1;
+                });
             });
-            this.getView().getModel("pager").setData(oData);
+
+            var oTreeModel = this.getView().getModel("tree");
+            oTreeModel.setData({ count: aNodes.length, nodes: aNodes });
         },
 
-        /* ---------- paging ---------- */
-
-        _goToPage: function (iPage) {
-            var oPager = this.getView().getModel("pager");
-            var iPages = oPager.getProperty("/pages");
-            var iTotal = oPager.getProperty("/total");
-            iPage = Math.min(Math.max(iPage, 1), iPages);
-
-            var iStartRow = (iPage - 1) * this._iPageSize;
-            var oTable = this.byId("mtoTable");
-            oTable.getRowMode().setRowCount(Math.max(1, Math.min(this._iPageSize, iTotal - iStartRow)));
-            oTable.setFirstVisibleRow(iStartRow);
-        },
-
-        _resetRows: function () {
-            var oTable = this.byId("mtoTable");
-            oTable.getRowMode().setRowCount(this._iPageSize);
-            oTable.setFirstVisibleRow(0);
-        },
-
-        onFirstPage: function () {
-            this._goToPage(1);
-        },
-
-        onPreviousPage: function () {
-            this._goToPage(this.getView().getModel("pager").getProperty("/page") - 1);
-        },
-
-        onNextPage: function () {
-            this._goToPage(this.getView().getModel("pager").getProperty("/page") + 1);
-        },
-
-        onLastPage: function () {
-            this._goToPage(this.getView().getModel("pager").getProperty("/pages"));
-        },
-
-        onPagePress: function (oEvent) {
-            this._goToPage(parseInt(oEvent.getSource().getText(), 10));
-        },
-
-        onItemsPerPageChange: function (oEvent) {
-            this._iPageSize = parseInt(oEvent.getParameter("selectedItem").getKey(), 10);
-            this._resetRows();
-            this.onRowsUpdated();
-        },
-
-        /* ---------- search / refresh ---------- */
+        /* ---------- search / refresh / expand ---------- */
 
         onSearch: function (oEvent) {
             this._sQuery = oEvent.getParameter("newValue") || oEvent.getParameter("query") || "";
-            this._applyFilter();
+            this._buildTree();
         },
 
         onFieldFilterChange: function () {
-            this._applyFilter();
+            this._buildTree();
         },
 
-        _applyFilter: function () {
-            var sQuery = this._sQuery || "";
-            var sKey = this.byId("mtoFieldFilterSelect").getSelectedKey();
-            var aFilters = [];
-
-            if (sQuery) {
-                var aFields = sKey === "all" ? ["mtoModelCode", "referenceMTSModel_modelCode"] : [sKey];
-                var aFieldFilters = aFields.map(function (sField) {
-                    return new Filter(sField, FilterOperator.Contains, sQuery);
-                });
-                aFilters.push(new Filter({ filters: aFieldFilters, and: false }));
-            }
-
-            this._resetRows();
-            this.byId("mtoTable").getBinding("rows").filter(aFilters, FilterType.Control);
+        onExpandAll: function () {
+            this.byId("mtoTreeTable").expandToLevel(1);
         },
 
-        onRefresh: function () {
-            var oBinding = this.byId("mtoTable").getBinding("rows");
+        onCollapseAll: function () {
+            this.byId("mtoTreeTable").collapseAll();
+        },
 
-            if (!oBinding) {
-                MessageToast.show("Table is not bound yet");
-                return;
-            }
-
+        onRefresh: async function () {
             this._sQuery = "";
             this.byId("mtoSearchField").setValue("");
             this.byId("mtoFieldFilterSelect").setSelectedKey("all");
-            this._resetRows();
-            oBinding.filter([], FilterType.Control);
-
-            try {
-                oBinding.refresh();
-                MessageToast.show("Data refreshed");
-            } catch (oError) {
-                MessageToast.show("Refresh failed: " + oError.message);
-            }
+            await this.loadData();
+            MessageToast.show("Data refreshed");
         },
 
         /* ---------- status badge ---------- */
@@ -176,27 +139,33 @@ sap.ui.define([
             }
         },
 
-        /* ---------- approve / reject ---------- */
+        /* ---------- approve / reject (parent rows only) ---------- */
 
         onApprove: function (oEvent) {
-            this._setApprovalStatus(oEvent.getSource().getBindingContext(), "APPROVED");
+            this._setApprovalStatus(oEvent.getSource().getBindingContext("tree"), "APPROVED");
         },
 
         onReject: function (oEvent) {
-            this._setApprovalStatus(oEvent.getSource().getBindingContext(), "REJECTED");
+            this._setApprovalStatus(oEvent.getSource().getBindingContext("tree"), "REJECTED");
         },
 
-        _setApprovalStatus: function (oContext, sStatus) {
-            var that = this;
-            oContext.setProperty("approvalStatus", sStatus)
-                .then(function () {
-                    MessageToast.show("Marked as " + that.formatStatusText(sStatus));
-                    // the row no longer matches the SUBMITTED filter, so reload the list
-                    that.byId("mtoTable").getBinding("rows").refresh();
-                })
-                .catch(function (oError) {
-                    MessageToast.show("Update failed: " + oError.message);
-                });
+        _setApprovalStatus: async function (oTreeContext, sStatus) {
+            var sCode = oTreeContext.getProperty("mtoModelCode");
+            var oModel = this.getView().getModel();
+            var sPath = "/MTOConfigurations('" + encodeURIComponent(sCode) + "')";
+            var oBinding = oModel.bindContext(sPath);
+
+            try {
+                await oBinding.requestObject();
+                await oBinding.getBoundContext().setProperty("approvalStatus", sStatus);
+                MessageToast.show("Marked as " + this.formatStatusText(sStatus));
+                // no longer SUBMITTED, so reload the list
+                await this.loadData();
+            } catch (oError) {
+                MessageToast.show("Update failed: " + oError.message);
+            } finally {
+                oBinding.destroy();
+            }
         }
     });
 });
