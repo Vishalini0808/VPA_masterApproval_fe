@@ -5,149 +5,266 @@
     xmlns:core="sap.ui.core"
     xmlns:t="sap.ui.table"
     xmlns:rowmodes="sap.ui.table.rowmodes">
- 
-    <Page id="page" showHeader="false" class="sapUiSizeCozy modelMasterPage">
+
+    <Page id="page" showHeader="false">
+
         <content>
-            <VBox id="modelmastercontainer" class="modelMasterContainer">
- 
-                <!-- Header -->
-                <HBox id="hbox" alignItems="Center" class="sapUiSmallMarginBottom">
-                    <HBox id="modelMasterIconBox" alignItems="Center" justifyContent="Center" class="modelHeaderIconBox">
-                        <core:Icon id="modelMasterIcon" src="sap-icon://car-rental" size="1.75rem"/>
-                    </HBox>
+
+            <VBox
+                id="modelmastercontainer"
+                width="auto"
+                class="sapUiMediumMargin">
+
+                <!-- HEADER -->
+
+                <HBox
+                    id="hbox"
+                    alignItems="Center"
+                    class="sapUiSmallMarginBottom">
+
+                    <core:Icon
+                        id="modelMasterIcon"
+                        src="sap-icon://car-rental"
+                        size="2rem"
+                        class="sapUiSmallMarginEnd"/>
+
                     <VBox id="vbox">
-                        <Title id="modeltitle" text="Model Master" level="H2" class="modelHeaderTitle"/>
-                        <Text id="pendingCountText" text="{pager>/total} records pending for approval" class="modelHeaderSub"/>
+
+                        <Title
+                            id="modeltitle"
+                            text="Model Master"
+                            level="H2"/>
+
+                        <Text
+                            id="pendingCountText"
+                            text="{pager>/total} records pending for approval"/>
+
                     </VBox>
+
                 </HBox>
- 
-                <!-- Search + filter + refresh -->
-                <Toolbar id="modelmasterToolbar" class="modelMasterToolbar">
-                    <SearchField id="modelSearchField" width="32rem" class="modelSearch"
+
+
+                <!-- SEARCH TOOLBAR -->
+
+                <OverflowToolbar
+                    id="modelmasterToolbar"
+                    width="100%">
+
+                    <SearchField
+                        id="modelSearchField"
+                        width="300px"
                         placeholder="Search by Model Code or Description..."
-                        liveChange=".onSearch"/>
-                    <Select id="fieldFilterSelect" width="12.5rem" class="modelSelect" change=".onFieldFilterChange">
+                        liveChange=".onSearch">
+
+                        <layoutData>
+                            <OverflowToolbarLayoutData
+                                priority="NeverOverflow"
+                                shrinkable="true"
+                                minWidth="150px"/>
+                        </layoutData>
+
+                    </SearchField>
+
+                    <Select
+                        id="fieldFilterSelect"
+                        width="170px"
+                        selectedKey="all"
+                        change=".onFieldFilterChange">
+
                         <items>
                             <core:Item id="allFieldsItem" key="all" text="All Fields"/>
                             <core:Item id="modelCodeItem" key="modelCode" text="Model Code"/>
                             <core:Item id="descriptionItem" key="modelDescription" text="Description"/>
                             <core:Item id="engineTypeItem" key="engineType" text="Engine Type"/>
                         </items>
+
                     </Select>
+
                     <ToolbarSpacer id="toolspacer"/>
-                    <Button id="refreshButton" text="Refresh" icon="sap-icon://refresh" class="modelOutlineBtn" press=".onRefresh"/>
-                </Toolbar>
- 
-                <VBox id="modelCard" class="modelCard">
- 
-                <!-- Table: only SUBMITTED records, $count gives the total for the pager -->
-                <t:Table id="model"
-                    rows="{path: '/Models', parameters: {$count: true}, filters: [{path: 'approvalStatus', operator: 'EQ', value1: 'SUBMITTED'}]}"
+
+                    <Button
+                        id="refreshButton"
+                        text="Refresh"
+                        icon="sap-icon://refresh"
+                        type="Transparent"
+                        press=".onRefresh">
+
+                        <layoutData>
+                            <OverflowToolbarLayoutData priority="NeverOverflow"/>
+                        </layoutData>
+
+                    </Button>
+
+                </OverflowToolbar>
+
+
+                <!-- MODEL TABLE (only SUBMITTED records are requested from the server) -->
+
+                <t:Table
+                    id="model"
+                    width="100%"
                     selectionMode="None"
+                    enableColumnReordering="true"
                     rowsUpdated=".onRowsUpdated"
-                    class="modelMasterTable">
- 
+
+                    rows="{
+                        path: '/Models',
+                        parameters: { $count: true },
+                        filters: [
+                            {
+                                path: 'approvalStatus',
+                                operator: 'EQ',
+                                value1: 'SUBMITTED'
+                            }
+                        ]
+                    }">
+
                     <t:rowMode>
                         <rowmodes:Fixed id="modelRowMode" rowCount="10"/>
                     </t:rowMode>
- 
+
                     <t:columns>
-                        <t:Column id="rowNumberColumn" width="3.5rem">
-                            <t:label><Label id="rowNumberLabel" text="#"/></t:label>
-                            <t:template><Text id="rowNumberText" text="" wrapping="false"/></t:template>
-                        </t:Column>
- 
-                        <t:Column id="modelCodeColumn" width="13rem" sortProperty="modelCode" filterProperty="modelCode">
-                            <t:label><Label id="modelcode" text="Model Code"/></t:label>
-                            <t:template><Text id="modelCodeText" text="{modelCode}" wrapping="false"/></t:template>
-                        </t:Column>
- 
-                        <t:Column id="modelDescriptionColumn" width="12rem" sortProperty="modelDescription" filterProperty="modelDescription">
-                            <t:label><Label id="modeldesc" text="Description"/></t:label>
-                            <t:template><Text id="modelDescriptionText" text="{modelDescription}" wrapping="false"/></t:template>
-                        </t:Column>
- 
-                        <t:Column id="engineTypeColumn" width="8rem" sortProperty="engineType" filterProperty="engineType">
-                            <t:label><Label id="enginetype" text="Engine Type"/></t:label>
-                            <t:template><Text id="engineTypeText" text="{engineType}" wrapping="false"/></t:template>
-                        </t:Column>
- 
-                        <t:Column id="ccWattColumn" width="7rem" sortProperty="ccWatt">
-                            <t:label><Label id="cc" text="CC / Watt"/></t:label>
-                            <t:template><Text id="ccWattText" text="{ccWatt}" wrapping="false"/></t:template>
-                        </t:Column>
- 
-                        <t:Column id="gstPercentColumn" width="6rem" sortProperty="gstPercent">
-                            <t:label><Label id="gst" text="GST %"/></t:label>
-                            <t:template><Text id="gstPercentText" text="{gstPercent}" wrapping="false"/></t:template>
-                        </t:Column>
- 
-                        <t:Column id="dealerMarginColumn" width="9rem" sortProperty="dealerMarginPercent">
-                            <t:label><Label id="dealer" text="Dealer Margin %"/></t:label>
-                            <t:template><Text id="dealerMarginText" text="{dealerMarginPercent}" wrapping="false"/></t:template>
-                        </t:Column>
- 
-                        <t:Column id="csdDiscountColumn" width="9rem" sortProperty="csdDiscountPercent">
-                            <t:label><Label id="csd" text="CSD Discount %"/></t:label>
-                            <t:template><Text id="csdDiscountText" text="{csdDiscountPercent}" wrapping="false"/></t:template>
-                        </t:Column>
- 
-                        <t:Column id="approvalStatusColumn" width="8rem" sortProperty="approvalStatus">
-                            <t:label><Label id="approval" text="Status"/></t:label>
+
+                        <t:Column
+                            id="rowNumberColumn"
+                            width="4rem"
+                            hAlign="End">
+                            <Label id="rowNumberLabel" text="#"/>
                             <t:template>
-                                <ObjectStatus id="approvalStatusObjectStatus"
-                                    class="statusBadge"
+                                <Text id="rowNumberText" text="" wrapping="false"/>
+                            </t:template>
+                        </t:Column>
+
+                        <t:Column
+                            id="modelCodeColumn"
+                            width="12rem"
+                            sortProperty="modelCode"
+                            filterProperty="modelCode">
+                            <Label id="modelcode" text="Model Code"/>
+                            <t:template>
+                                <Text id="modelCodeText" text="{modelCode}" wrapping="false"/>
+                            </t:template>
+                        </t:Column>
+
+                        <t:Column
+                            id="modelDescriptionColumn"
+                            width="14rem"
+                            sortProperty="modelDescription"
+                            filterProperty="modelDescription">
+                            <Label id="modeldesc" text="Description"/>
+                            <t:template>
+                                <Text id="modelDescriptionText" text="{modelDescription}" wrapping="false"/>
+                            </t:template>
+                        </t:Column>
+
+                        <t:Column
+                            id="engineTypeColumn"
+                            width="10rem"
+                            sortProperty="engineType"
+                            filterProperty="engineType">
+                            <Label id="enginetype" text="Engine Type"/>
+                            <t:template>
+                                <Text id="engineTypeText" text="{engineType}" wrapping="false"/>
+                            </t:template>
+                        </t:Column>
+
+                        <t:Column
+                            id="ccWattColumn"
+                            width="8rem"
+                            hAlign="End"
+                            sortProperty="ccWatt">
+                            <Label id="cc" text="CC / Watt"/>
+                            <t:template>
+                                <Text id="ccWattText" text="{ccWatt}" wrapping="false"/>
+                            </t:template>
+                        </t:Column>
+
+                        <t:Column
+                            id="gstPercentColumn"
+                            width="7rem"
+                            hAlign="End"
+                            sortProperty="gstPercent">
+                            <Label id="gst" text="GST %"/>
+                            <t:template>
+                                <Text id="gstPercentText" text="{gstPercent}" wrapping="false"/>
+                            </t:template>
+                        </t:Column>
+
+                        <t:Column
+                            id="dealerMarginColumn"
+                            width="10rem"
+                            hAlign="End"
+                            sortProperty="dealerMarginPercent">
+                            <Label id="dealer" text="Dealer Margin %"/>
+                            <t:template>
+                                <Text id="dealerMarginText" text="{dealerMarginPercent}" wrapping="false"/>
+                            </t:template>
+                        </t:Column>
+
+                        <t:Column
+                            id="csdDiscountColumn"
+                            width="10rem"
+                            hAlign="End"
+                            sortProperty="csdDiscountPercent">
+                            <Label id="csd" text="CSD Discount %"/>
+                            <t:template>
+                                <Text id="csdDiscountText" text="{csdDiscountPercent}" wrapping="false"/>
+                            </t:template>
+                        </t:Column>
+
+                        <t:Column
+                            id="approvalStatusColumn"
+                            width="10rem"
+                            sortProperty="approvalStatus">
+                            <Label id="approval" text="Approval Status"/>
+                            <t:template>
+                                <ObjectStatus
+                                    id="approvalStatusObjectStatus"
                                     text="{path: 'approvalStatus', formatter: '.formatStatusText'}"
                                     state="{path: 'approvalStatus', formatter: '.formatStatusState'}"/>
                             </t:template>
                         </t:Column>
- 
-                        <t:Column id="actionsColumn" width="8rem">
-                            <t:label><Label id="actionsLabel" text="Actions"/></t:label>
+
+                        <t:Column
+                            id="actionsColumn"
+                            width="17rem"
+                            hAlign="Center">
+                            <Label id="actionsLabel" text="Actions"/>
                             <t:template>
-                                <HBox id="actionsBox" justifyContent="Start" alignItems="Center">
-                                    <Button id="approveButton" icon="sap-icon://accept" type="Default"
-                                        tooltip="Approve" press=".onApprove" class="approveBtn sapUiTinyMarginEnd"/>
-                                    <Button id="rejectButton" icon="sap-icon://decline" type="Default"
-                                        tooltip="Reject" press=".onReject" class="rejectBtn"/>
+                                <HBox
+                                    id="actionsBox"
+                                    alignItems="Center"
+                                    justifyContent="Center">
+
+                                    <Button
+                                        id="approveButton"
+                                        text="Approve"
+                                        icon="sap-icon://accept"
+                                        type="Accept"
+                                        class="sapUiTinyMarginEnd"
+                                        enabled="{= ${approvalStatus} === 'SUBMITTED' }"
+                                        press=".onApprove"/>
+
+                                    <Button
+                                        id="rejectButton"
+                                        text="Reject"
+                                        icon="sap-icon://decline"
+                                        type="Reject"
+                                        enabled="{= ${approvalStatus} === 'SUBMITTED' }"
+                                        press=".onReject"/>
+
                                 </HBox>
                             </t:template>
                         </t:Column>
+
                     </t:columns>
+
                 </t:Table>
- 
-                <!-- Pagination -->
-                <HBox id="paginationContainer" justifyContent="End" alignItems="Center" class="paginationContainer sapUiSmallMarginTop">
- 
-                    <Text id="itemsPerPageLabel" text="Items per page:" class="sapUiSmallMarginEnd"/>
-                    <Select id="itemsPerPageSelect" selectedKey="10" width="6rem" change=".onItemsPerPageChange" class="modelSelect sapUiMediumMarginEnd">
-                        <items>
-                            <core:Item id="itemsPerPage5" key="5" text="5"/>
-                            <core:Item id="itemsPerPage10" key="10" text="10"/>
-                            <core:Item id="itemsPerPage20" key="20" text="20"/>
-                            <core:Item id="itemsPerPage50" key="50" text="50"/>
-                        </items>
-                    </Select>
- 
-                    <Text id="pageInfoText" text="{pager>/from} – {pager>/to} of {pager>/total}" class="sapUiMediumMarginEnd"/>
- 
-                    <Button id="firstPageButton" icon="sap-icon://close-command-field" type="Transparent"
-                        tooltip="First Page" enabled="{pager>/prevEnabled}" press=".onFirstPage"/>
-                    <Button id="previousPageButton" icon="sap-icon://navigation-left-arrow" type="Transparent"
-                        tooltip="Previous Page" enabled="{pager>/prevEnabled}" press=".onPreviousPage"/>
-                    <Button id="page1Button" text="{pager>/p1}" visible="{pager>/p1Visible}" type="{pager>/p1Type}" press=".onPagePress"/>
-                    <Button id="page2Button" text="{pager>/p2}" visible="{pager>/p2Visible}" type="{pager>/p2Type}" press=".onPagePress"/>
-                    <Button id="page3Button" text="{pager>/p3}" visible="{pager>/p3Visible}" type="{pager>/p3Type}" press=".onPagePress"/>
-                    <Button id="nextPageButton" icon="sap-icon://navigation-right-arrow" type="Transparent"
-                        tooltip="Next Page" enabled="{pager>/nextEnabled}" press=".onNextPage"/>
-                    <Button id="lastPageButton" icon="sap-icon://open-command-field" type="Transparent"
-                        tooltip="Last Page" enabled="{pager>/nextEnabled}" press=".onLastPage"/>
-                </HBox>
- 
-                </VBox>
- 
+
             </VBox>
+
         </content>
+
     </Page>
- 
+
 </mvc:View>

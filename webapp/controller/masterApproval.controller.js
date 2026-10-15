@@ -1,161 +1,186 @@
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
-    "sap/ui/core/mvc/XMLView"
-], (Controller,XMLView) => {
+    "sap/ui/core/mvc/XMLView",
+    "sap/ui/core/BusyIndicator"
+], (Controller, XMLView, BusyIndicator) => {
     "use strict";
 
     return Controller.extend("vpamasterapproval.controller.masterApproval", {
 
-    onInit() {
+        
+onInit: async function () {
 
-            var oNavContainer = this.byId("mainNavContainer");
+    var oComponent = this.getOwnerComponent();
+    var oModel = oComponent.getModel();
 
-            this._oHomeDashboardView = sap.ui.xmlview({
-                viewName: "vpamasterapproval.view.HomeDashboard"
-            });
+    var oNavContainer = this.byId("mainNavContainer");
 
-            oNavContainer.addPage(this._oHomeDashboardView);
-            oNavContainer.to(this._oHomeDashboardView);
-        },
+    // Show busy indicator immediately
+    oNavContainer.setBusyIndicatorDelay(0);
+    oNavContainer.setBusy(true);
 
-    onNavigationSelect: function (oEvent) {
+    try {
 
-     console.log('event',oEvent);   
-
-
-    var oItem = oEvent.getParameter("item");
-
-    console.log('items',oItem)
-
-    var sKey = oItem.getKey();
-
-    console.log('key value',sKey)
-
-
-    if(sKey==="model"){
-
-             var oNavContainer = this.byId("mainNavContainer");
-
-    if (!this._oModelMasterView) {
-        this._oModelMasterView = sap.ui.xmlview({
-            viewName: "vpamasterapproval.view.ModelMaster"
+        this._oHomeDashboardView = sap.ui.xmlview({
+            viewName: "vpamasterapproval.view.HomeDashboard"
         });
 
-        oNavContainer.addPage(this._oModelMasterView);
-    }
+        this._oHomeDashboardView.setModel(oModel);
 
-    oNavContainer.to(this._oModelMasterView);
+        oNavContainer.addPage(this._oHomeDashboardView);
+        oNavContainer.to(this._oHomeDashboardView);
 
-    }
+        var oHomeController =
+            this._oHomeDashboardView.getController();
 
-    if(sKey==="pricing"){
+        // Wait until all dashboard data is loaded
+        await Promise.all([
 
-        var oNavContainer=this.byId("mainNavContainer");
+            oHomeController._loadApprovalStatus(),
 
-        if(!this._oModelPricingView){
-            this._oModelPricingView= sap.ui.xmlview({
-                viewName:"vpamasterapproval.view.PricingComponents"
-            });
+            oHomeController._loadVehiclePriceChart(),
 
-        oNavContainer.addPage(this._oModelPricingView);
-        }
-        oNavContainer.to(this._oModelPricingView)
+            oHomeController._loadModelCount()
 
-    }
+        ]);
 
+    } catch (oError) {
 
-    if(sKey==="region"){
+        console.error("Home Dashboard loading failed:", oError);
 
+    } finally {
 
-        var oNavContainer=this.byId("mainNavContainer");
-
-        if(!this._oModelRegionView){
-
-            this._oModelRegionView=sap.ui.xmlview({
-
-                viewName:"vpamasterapproval.view.Regions"
-            });
-
-        oNavContainer.addPage(this._oModelRegionView);
-        }
-
-        oNavContainer.to(this._oModelRegionView);
+        // Hide busy indicator after loading
+        oNavContainer.setBusy(false);
 
     }
+},
 
-    if(sKey==="rto"){
 
-        var oNavContainer=this.byId("mainNavContainer");
 
-        if(!this._oModelRtoView){
 
-            this._oModelRtoView=sap.ui.xmlview({
-                viewName:"vpamasterapproval.view.RTOMasters"
-            });
 
-         oNavContainer.addPage(this._oModelRtoView);
-        }
         
-        oNavContainer.to(this._oModelRtoView);
-    }
+onNavigationSelect: async function (oEvent) {
 
+    var sKey = oEvent.getParameter("item").getKey();
 
-    if(sKey==="rtoexpense"){
+    var oNavContainer = this.byId("mainNavContainer");
 
+    oNavContainer.setBusyIndicatorDelay(0);
+    oNavContainer.setBusy(true);
 
-        var oNavContainer=this.byId("mainNavContainer")
+    try {
 
+        // Home Dashboard
+        if (sKey === "home") {
 
-        if(!this._oModelRtoexpenseView){
+            oNavContainer.to(this._oHomeDashboardView);
 
-            this._oModelRtoexpenseView=sap.ui.xmlview({
-                viewName:"vpamasterapproval.view.RTOExpense"
+            var oHomeController =
+                this._oHomeDashboardView.getController();
+
+            await Promise.all([
+                oHomeController._loadModelCount(),
+                oHomeController._loadApprovalStatus(),
+                oHomeController._loadVehiclePriceChart()
+            ]);
+
+            return;
+        }
+
+        // Master View Configuration
+        var mViews = {
+
+            model: {
+                name: "ModelMaster",
+                property: "_oModelMasterView"
+            },
+
+            pricing: {
+                name: "PricingComponents",
+                property: "_oModelPricingView"
+            },
+
+            region: {
+                name: "Regions",
+                property: "_oModelRegionView"
+            },
+
+            rto: {
+                name: "RTOMasters",
+                property: "_oModelRtoView"
+            },
+
+            rtoexpense: {
+                name: "RTOExpense",
+                property: "_oModelRtoexpenseView"
+            },
+
+            mto: {
+                name: "MTOConfigurations",
+                property: "_oModelMtoView"
+            },
+
+            parts: {
+                name: "Parts",
+                property: "_oModelPartsView"
+            }
+
+        };
+
+        var oConfig = mViews[sKey];
+
+        if (!oConfig) {
+            return;
+        }
+
+        var oTargetView = this[oConfig.property];
+
+        // Create view only once
+        if (!oTargetView) {
+
+            oTargetView = await XMLView.create({
+
+                viewName:
+                    "vpamasterapproval.view." + oConfig.name
+
             });
 
+            oTargetView.setModel(
+                this.getOwnerComponent().getModel()
+            );
 
-         oNavContainer.addPage(this._oModelRtoexpenseView);
+            oNavContainer.addPage(oTargetView);
+
+            this[oConfig.property] = oTargetView;
         }
 
-        oNavContainer.to(this._oModelRtoexpenseView)
-    }
+        // Navigate
+        oNavContainer.to(oTargetView);
 
+        // Wait for target view data loading
+        var oController = oTargetView.getController();
 
-    if(sKey==="mto"){
+        if (typeof oController.loadData === "function") {
 
-        var oNavContainer=this.byId("mainNavContainer");
+            await oController.loadData();
 
-
-        if(!this._oModelMtoView){
-            this._oModelMtoView=sap.ui.xmlview({
-
-                viewName:"vpamasterapproval.view.MTOConfigurations"
-            });
-        
-        oNavContainer.addPage(this._oModelMtoView);
         }
 
-        oNavContainer.to(this._oModelMtoView);
+    } catch (oError) {
+
+        console.error("Navigation failed:", oError);
+
+    } finally {
+
+        oNavContainer.setBusy(false);
+
     }
-
-
-    if(sKey==="parts"){
-
-        var oNavContainer=this.byId("mainNavContainer");
-
-
-        if(!this._oModelPartsView){
-
-            this._oModelPartsView=sap.ui.xmlview({
-                viewName:"vpamasterapproval.view.Parts"
-            })
-
-          oNavContainer.addPage(this._oModelPartsView);
-        }
-
-        oNavContainer.to(this._oModelPartsView)
-    }
-
 
 }
+
+
+
     });
 });
