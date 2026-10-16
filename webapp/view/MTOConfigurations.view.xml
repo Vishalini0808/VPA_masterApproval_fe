@@ -10,17 +10,10 @@
 
         <content>
 
-            <VBox
-                id="mtoContainer"
-                width="auto"
-                class="sapUiMediumMargin">
+            <VBox id="mtoContainer" width="auto" class="sapUiMediumMargin">
 
                 <!-- HEADER -->
-
-                <HBox
-                    id="mtoHeader"
-                    alignItems="Center"
-                    class="sapUiSmallMarginBottom">
+                <HBox id="mtoHeader" alignItems="Center" class="sapUiSmallMarginBottom">
 
                     <core:Icon
                         id="mtoIcon"
@@ -29,40 +22,26 @@
                         class="sapUiSmallMarginEnd"/>
 
                     <VBox id="mtoTitleBox">
-
-                        <Title
-                            id="mtoTitle"
-                            text="MTO Configurations"
-                            level="H2"/>
-
-                        <Text
-                            id="mtoCountText"
-                            text="{pager>/total} records pending for approval"/>
-
+                        <Title id="mtoTitle" text="MTO Configurations" level="H2"/>
+                        <Text id="mtoCountText" text="{tree>/count} records pending for approval"/>
                     </VBox>
 
                 </HBox>
 
-
                 <!-- SEARCH TOOLBAR -->
-
-                <OverflowToolbar
-                    id="mtoToolbar"
-                    width="100%">
+                <OverflowToolbar id="mtoToolbar" width="100%">
 
                     <SearchField
                         id="mtoSearchField"
                         width="300px"
                         placeholder="Search by MTO Model Code or Reference Model..."
                         liveChange=".onSearch">
-
                         <layoutData>
                             <OverflowToolbarLayoutData
                                 priority="NeverOverflow"
                                 shrinkable="true"
                                 minWidth="150px"/>
                         </layoutData>
-
                     </SearchField>
 
                     <Select
@@ -70,16 +49,28 @@
                         width="200px"
                         selectedKey="all"
                         change=".onFieldFilterChange">
-
                         <items>
                             <core:Item id="mtoAllItem" key="all" text="All Fields"/>
                             <core:Item id="mtoCodeItem" key="mtoModelCode" text="MTO Model Code"/>
                             <core:Item id="mtoRefItem" key="referenceModel" text="Reference MTS Model"/>
                         </items>
-
                     </Select>
 
                     <ToolbarSpacer id="mtoSpacer"/>
+
+                    <Button
+                        id="mtoExpandAllButton"
+                        text="Expand All"
+                        icon="sap-icon://expand-all"
+                        type="Transparent"
+                        press=".onExpandAll"/>
+
+                    <Button
+                        id="mtoCollapseAllButton"
+                        text="Collapse All"
+                        icon="sap-icon://collapse-all"
+                        type="Transparent"
+                        press=".onCollapseAll"/>
 
                     <Button
                         id="mtoRefreshButton"
@@ -87,111 +78,107 @@
                         icon="sap-icon://refresh"
                         type="Transparent"
                         press=".onRefresh">
-
                         <layoutData>
                             <OverflowToolbarLayoutData priority="NeverOverflow"/>
                         </layoutData>
-
                     </Button>
 
                 </OverflowToolbar>
 
-
-                <!-- MTO TABLE (only SUBMITTED records are requested from the server) -->
-
-                <t:Table
-                    id="mtoTable"
+                <!-- MTO TREE TABLE: MTO configuration (parent) -> parts (children) -->
+                <t:TreeTable
+                    id="mtoTreeTable"
                     width="100%"
                     selectionMode="None"
                     enableColumnReordering="true"
-                    rowsUpdated=".onRowsUpdated"
-
                     rows="{
-                        path: '/MTOConfigurations',
-                        parameters: { $count: true },
-                        filters: [
-                            {
-                                path: 'approvalStatus',
-                                operator: 'EQ',
-                                value1: 'SUBMITTED'
-                            }
-                        ]
+                        path: 'tree>/nodes',
+                        parameters: {
+                            arrayNames: ['children'],
+                            numberOfExpandedLevels: 0
+                        }
                     }">
 
                     <t:rowMode>
-                        <rowmodes:Fixed id="mtoRowMode" rowCount="10"/>
+                        <rowmodes:Interactive id="mtoRowMode" rowCount="10"/>
                     </t:rowMode>
 
                     <t:columns>
 
-                        <t:Column
-                            id="mtoRowNumberColumn"
-                            width="4rem"
-                            hAlign="End">
-                            <Label id="mtoRowNumberLabel" text="#"/>
+                        <!-- tree column: MTO model code (parent) / part code (child) -->
+                        <t:Column id="mtoNameColumn" width="20rem">
+                            <Label id="mtoNameLabel" text="MTO Model Code / Part Code"/>
                             <t:template>
-                                <Text id="mtoRowNumberText" text="" wrapping="false"/>
+                                <Text
+                                    id="mtoNameText"
+                                    text="{tree>name}"
+                                    wrapping="false"/>
                             </t:template>
                         </t:Column>
 
-                        <t:Column
-                            id="mtoModelCodeColumn"
-                            width="16rem"
-                            sortProperty="mtoModelCode"
-                            filterProperty="mtoModelCode">
-                            <Label id="mtoModelCodeLabel" text="MTO Model Code"/>
+                        <t:Column id="mtoRefModelColumn" width="16rem">
+                            <Label id="mtoRefModelLabel" text="Reference MTS Model"/>
                             <t:template>
-                                <Text id="mtoModelCodeText" text="{mtoModelCode}" wrapping="false"/>
+                                <Text
+                                    id="mtoRefModelText"
+                                    text="{tree>referenceModel}"
+                                    wrapping="false"/>
                             </t:template>
                         </t:Column>
 
-                        <t:Column
-                            id="mtoValidFromColumn"
-                            width="10rem"
-                            sortProperty="validFrom">
+                        <t:Column id="mtoValidFromColumn" width="10rem">
                             <Label id="mtoValidFromLabel" text="Valid From"/>
                             <t:template>
                                 <Text
                                     id="mtoValidFromText"
                                     wrapping="false"
-                                    text="{path: 'validFrom', type: 'sap.ui.model.odata.type.Date'}"/>
+                                    text="{
+                                        path: 'tree>validFrom',
+                                        type: 'sap.ui.model.type.Date',
+                                        formatOptions: { source: { pattern: 'yyyy-MM-dd' }, style: 'medium' }
+                                    }"/>
                             </t:template>
                         </t:Column>
 
-                        <t:Column
-                            id="mtoRefModelColumn"
-                            width="16rem"
-                            sortProperty="referenceMTSModel_modelCode"
-                            filterProperty="referenceMTSModel_modelCode">
-                            <Label id="mtoRefModelLabel" text="Reference MTS Model"/>
+                        <t:Column id="mtoPartDescColumn" width="18rem">
+                            <Label id="mtoPartDescLabel" text="Part Description"/>
                             <t:template>
-                                <Text id="mtoRefModelText" text="{referenceMTSModel_modelCode}" wrapping="false"/>
+                                <Text
+                                    id="mtoPartDescText"
+                                    text="{tree>description}"
+                                    wrapping="false"/>
                             </t:template>
                         </t:Column>
 
-                        <t:Column
-                            id="mtoStatusColumn"
-                            width="10rem"
-                            sortProperty="approvalStatus">
+                        <t:Column id="mtoQtyColumn" width="7rem" hAlign="End">
+                            <Label id="mtoQtyLabel" text="Quantity"/>
+                            <t:template>
+                                <Text
+                                    id="mtoQtyText"
+                                    text="{tree>quantity}"
+                                    wrapping="false"/>
+                            </t:template>
+                        </t:Column>
+
+                        <t:Column id="mtoStatusColumn" width="10rem">
                             <Label id="mtoStatusLabel" text="Approval Status"/>
                             <t:template>
                                 <ObjectStatus
                                     id="mtoStatusObjectStatus"
-                                    text="{path: 'approvalStatus', formatter: '.formatStatusText'}"
-                                    state="{path: 'approvalStatus', formatter: '.formatStatusState'}"/>
+                                    visible="{= ${tree>type} === 'config' }"
+                                    text="{path: 'tree>status', formatter: '.formatStatusText'}"
+                                    state="{path: 'tree>status', formatter: '.formatStatusState'}"/>
                             </t:template>
                         </t:Column>
 
-                        <t:Column
-                            id="mtoActionsColumn"
-                            width="17rem"
-                            hAlign="Center">
+                        <t:Column id="mtoActionsColumn" width="17rem" hAlign="Center">
                             <Label id="mtoActionsLabel" text="Actions"/>
                             <t:template>
                                 <HBox
                                     id="mtoActionsBox"
                                     alignItems="Center"
-                                    justifyContent="Center">
+                                    justifyContent="Center"
+                                    visible="{= ${tree>type} === 'config' }">
 
                                     <Button
                                         id="mtoApproveButton"
@@ -199,7 +186,7 @@
                                         icon="sap-icon://accept"
                                         type="Accept"
                                         class="sapUiTinyMarginEnd"
-                                        enabled="{= ${approvalStatus} === 'SUBMITTED' }"
+                                        enabled="{= ${tree>status} === 'SUBMITTED' }"
                                         press=".onApprove"/>
 
                                     <Button
@@ -207,7 +194,7 @@
                                         text="Reject"
                                         icon="sap-icon://decline"
                                         type="Reject"
-                                        enabled="{= ${approvalStatus} === 'SUBMITTED' }"
+                                        enabled="{= ${tree>status} === 'SUBMITTED' }"
                                         press=".onReject"/>
 
                                 </HBox>
@@ -216,7 +203,7 @@
 
                     </t:columns>
 
-                </t:Table>
+                </t:TreeTable>
 
             </VBox>
 
