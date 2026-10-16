@@ -1,0 +1,121 @@
+
+_schema-version: "3.3.0"
+ID: vpa-master-approval
+version: 0.0.1
+description: "VPA Master Data Approval"
+
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true
+
+modules:
+
+  - name: vpa-master-approval-app
+    type: html5
+    path: .
+    build-parameters:
+      builder: custom
+      commands:
+        - npm install
+        - npm run build
+        - npm run package:html5
+      build-result: .
+      supported-platforms: []
+
+  - name: vpa-master-approval-content
+    type: com.sap.application.content
+    path: .
+    requires:
+      - name: vpa-master-approval-repo-host
+        parameters:
+          content-target: true
+    build-parameters:
+      build-result: resources
+      requires:
+        - name: vpa-master-approval-app
+          artifacts:
+            - vpa-master-approval-app.zip
+          target-path: resources/
+
+  - name: vpa-master-approval-destination-content
+    type: com.sap.application.content
+    requires:
+      - name: vpa-master-approval-destination
+        parameters:
+          content-target: true
+
+      - name: vpa-master-approval-repo-host
+        parameters:
+          service-key:
+            name: vpa-master-approval-repo-key
+
+      - name: vpa-master-approval-auth
+        parameters:
+          service-key:
+            name: vpa-master-approval-auth-key
+
+    parameters:
+      content:
+        instance:
+          destinations:
+            - Name: vpamasterapproval_html_repo_host
+              ServiceInstanceName: vpa-master-approval-repo-host
+              ServiceKeyName: vpa-master-approval-repo-key
+              sap.cloud.service: vpamasterapproval
+
+            - Name: vpamasterapproval_auth
+              Authentication: OAuth2UserTokenExchange
+              ServiceInstanceName: vpa-master-approval-xsuaa
+              ServiceKeyName: vpa-master-approval-auth-key
+              sap.cloud.service: vpamasterapproval
+
+          existing_destinations_policy: update
+
+    build-parameters:
+      no-source: true
+
+resources:
+
+  - name: vpa-master-approval-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-host
+      service-name: vpa-master-approval-repo-host
+
+  - name: vpa-master-approval-destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite
+      service-name: vpa-master-approval-destination-service
+      config:
+        HTML5Runtime_enabled: true
+        version: 1.0.0
+        init_data:
+          instance:
+            destinations:
+              - Name: ui5
+                Type: HTTP
+                ProxyType: Internet
+                Authentication: NoAuthentication
+                URL: https://ui5.sap.com
+
+              - Name: VPA_backend
+                Type: HTTP
+                ProxyType: Internet
+                Authentication: NoAuthentication
+                URL: https://b1c17123trial-dev-vpa-srv.cfapps.us10-003.hana.ondemand.com
+
+            existing_destinations_policy: update
+
+  - name: vpa-master-approval-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      service-name: vpa-master-approval-xsuaa
+      path: ./xs-security.json
+      config:
+        xsappname: vpamasterapproval-${org}-${space}
+        tenant-mode: dedicated

@@ -24,8 +24,15 @@ xmlns:viz.feeds="sap.viz.ui5.controls.common.feeds">
                 <Title id="date" class="bannerDate" level="H6"/>
             </VBox>
 
-            <Image  id="bannerCarImage" src="images/rf.png" alt="Royal Enfield Classic 350"  decorative="false" densityAware="false"  width="280px"  height="140px" class="bannerCarImage"/>
-
+            <Image
+                id="bannerCarImage"
+                alt="Royal Enfield Classic 350"
+                decorative="false"
+                densityAware="false"
+                width="280px"
+                height="140px"
+                class="bannerCarImage"
+            />
         </HBox>
 
      <VBox id="pagetitlecontainer" width="100%" class="pageTitleContainer">
