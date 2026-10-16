@@ -8,13 +8,14 @@
     "sapui5"
   ],
   "main": "webapp/index.html",
-  "dependencies": {},
   "devDependencies": {
-    "@ui5/cli": "^4.0.33",
-    "@sap/ux-ui5-tooling": "1",
     "@sap-ux/eslint-plugin-fiori-tools": "^10.0.0",
-    "eslint": "^10",
-    "@sap-ux/ui5-middleware-fe-mockserver": "2"
+    "@sap-ux/ui5-middleware-fe-mockserver": "2",
+    "@sap/cds-dk": "^10",
+    "@sap/ux-ui5-tooling": "1",
+    "@ui5/cli": "^4.0.33",
+    "archiver": "^8.0.0",
+    "eslint": "^10"
   },
   "scripts": {
     "start": "fiori run --open \"test/flp.html#app-preview\"",
@@ -27,7 +28,8 @@
     "start-mock": "fiori run --config ./ui5-mock.yaml --open \"test/flp.html#app-preview\"",
     "int-test": "fiori run --config ./ui5-mock.yaml --open \"test/integration/opaTests.qunit.html\"",
     "start-variants-management": "fiori run --open \"/preview.html#app-preview\"",
-    "unit-test": "fiori run --config ./ui5-mock.yaml --open \"test/unit/unitTests.qunit.html\""
+    "unit-test": "fiori run --config ./ui5-mock.yaml --open \"test/unit/unitTests.qunit.html\"",
+    "package:html5": "cp xs-app.json dist/xs-app.json && cd dist && zip -r -FS ../vpa-master-approval-app.zip ."
   },
   "sapuxLayer": "CUSTOMER_BASE"
 }
