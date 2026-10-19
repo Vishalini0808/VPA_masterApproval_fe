@@ -105,7 +105,7 @@ resources:
                 Type: HTTP
                 ProxyType: Internet
                 Authentication: NoAuthentication
-                URL: https://b1c17123trial-dev-vpa-srv.cfapps.us10-003.hana.ondemand.com
+                URL: https://5a566441trial-dev-vpa-srv.cfapps.us10-001.hana.ondemand.com
 
             existing_destinations_policy: update
 
