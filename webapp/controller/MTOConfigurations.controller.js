@@ -3,8 +3,9 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    "sap/m/MessageToast"
-], function (Controller, JSONModel, Filter, FilterOperator, MessageToast) {
+    "sap/m/MessageToast",
+    "sap/m/MessageBox"
+], function (Controller, JSONModel, Filter, FilterOperator, MessageToast, MessageBox) {
     "use strict";
 
     return Controller.extend("vpamasterapproval.controller.MTOConfigurations", {
@@ -14,7 +15,43 @@ sap.ui.define([
             this._sQuery = "";
 
             // JSON model that holds the tree: MTO configuration -> parts
-            this.getView().setModel(new JSONModel({ count: 0, nodes: [] }), "tree");
+            this.getView().setModel(new JSONModel({ count: 0, selectedCount: 0, nodes: [] }), "tree");
+        },
+
+
+
+        onSelectionChange: function () {
+
+            var oTable = this.byId("mtoTreeTable");
+
+            oTable.getSelectedIndices().forEach(function (iIndex) {
+
+                var oContext = oTable.getContextByIndex(iIndex);
+
+                if (!oContext || oContext.getProperty("type") !== "config") {
+                    oTable.removeSelectionInterval(iIndex, iIndex);
+                }
+
+            });
+
+            this.getView()
+                .getModel("tree")
+                .setProperty(
+                    "/selectedCount",
+                    oTable.getSelectedIndices().length
+                );
+
+        },
+
+
+        _clearSelection: function () {
+
+            this.byId("mtoTreeTable").clearSelection();
+
+            this.getView()
+                .getModel("tree")
+                .setProperty("/selectedCount", 0);
+
         },
 
         /* ---------- data loading (called by masterApproval controller on navigation) ---------- */
@@ -62,6 +99,7 @@ sap.ui.define([
         /* ---------- build / filter the tree ---------- */
 
         _buildTree: function () {
+            this._clearSelection();
             var sQuery = (this._sQuery || "").toLowerCase();
             var sKey = this.byId("mtoFieldFilterSelect").getSelectedKey();
 
@@ -94,7 +132,7 @@ sap.ui.define([
             });
 
             var oTreeModel = this.getView().getModel("tree");
-            oTreeModel.setData({ count: aNodes.length, nodes: aNodes });
+            oTreeModel.setData({ count: aNodes.length, selectedCount: 0, nodes: aNodes });
         },
 
         /* ---------- search / refresh / expand ---------- */
@@ -141,31 +179,208 @@ sap.ui.define([
 
         /* ---------- approve / reject (parent rows only) ---------- */
 
-        onApprove: function (oEvent) {
-            this._setApprovalStatus(oEvent.getSource().getBindingContext("tree"), "APPROVED");
+
+        onApproveSelected: function () {
+
+            this._processSelectedMTO(
+                "approveMaster",
+                "approve"
+            );
+
         },
 
-        onReject: function (oEvent) {
-            this._setApprovalStatus(oEvent.getSource().getBindingContext("tree"), "REJECTED");
+        onRejectSelected: function () {
+
+            this._processSelectedMTO(
+                "rejectMaster",
+                "reject"
+            );
+
         },
 
-        _setApprovalStatus: async function (oTreeContext, sStatus) {
-            var sCode = oTreeContext.getProperty("mtoModelCode");
+        _processSelectedMTO: function (sAction, sOperation) {
+
+            var oTable = this.byId("mtoTreeTable");
             var oModel = this.getView().getModel();
-            var sPath = "/MTOConfigurations('" + encodeURIComponent(sCode) + "')";
-            var oBinding = oModel.bindContext(sPath);
 
-            try {
-                await oBinding.requestObject();
-                await oBinding.getBoundContext().setProperty("approvalStatus", sStatus);
-                MessageToast.show("Marked as " + this.formatStatusText(sStatus));
-                // no longer SUBMITTED, so reload the list
-                await this.loadData();
-            } catch (oError) {
-                MessageToast.show("Update failed: " + oError.message);
-            } finally {
-                oBinding.destroy();
+            var aIndices = oTable.getSelectedIndices();
+
+            if (!aIndices.length) {
+
+                MessageToast.show(
+                    "Please select at least one MTO Configuration"
+                );
+
+                return;
             }
-        }
+
+            // Only process parent configuration rows.
+            // Selected child/part rows are ignored.
+
+            var aRecords = aIndices.map(function (iIndex) {
+
+                var oContext = oTable.getContextByIndex(iIndex);
+
+                if (!oContext) {
+                    return null;
+                }
+
+                if (oContext.getProperty("type") !== "config") {
+                    return null;
+                }
+
+                return {
+                    mtoModelCode: oContext.getProperty("mtoModelCode")
+                };
+
+            }).filter(function (oRecord) {
+                return oRecord !== null;
+            });
+
+            if (!aRecords.length) {
+
+                MessageBox.warning(
+                    "Please select MTO Configuration parent rows. " +
+                    "Part rows cannot be approved separately."
+                );
+
+                return;
+            }
+
+            if (aRecords.some(function (oRecord) {
+                return !oRecord.mtoModelCode;
+            })) {
+
+                MessageBox.error(
+                    "MTO Model Code is missing for a selected configuration."
+                );
+
+                return;
+            }
+
+            MessageBox.confirm(
+                "Are you sure you want to " +
+                sOperation + " " +
+                aRecords.length + " selected MTO Configuration(s)?",
+                {
+                    title: sOperation === "approve"
+                        ? "Confirm Approval"
+                        : "Confirm Rejection",
+
+                    actions: [
+                        MessageBox.Action.YES,
+                        MessageBox.Action.NO
+                    ],
+
+                    emphasizedAction: MessageBox.Action.YES,
+
+                    onClose: async function (sResult) {
+
+                        if (sResult !== MessageBox.Action.YES) {
+                            return;
+                        }
+
+                        var iSuccess = 0;
+                        var aFailed = [];
+
+                        oTable.setBusy(true);
+
+                        try {
+
+                            for (const oRecord of aRecords) {
+
+                                try {
+
+                                    var oAction = oModel.bindContext(
+                                        "/" + sAction + "(...)"
+                                    );
+
+                                    oAction.setParameter(
+                                        "entityName",
+                                        "MTOConfigurations"
+                                    );
+
+                                    oAction.setParameter(
+                                        "recordKey",
+                                        JSON.stringify({
+                                            mtoModelCode: oRecord.mtoModelCode
+                                        })
+                                    );
+
+                                    await oAction.execute("$direct");
+
+                                    var oResult = oAction
+                                        .getBoundContext()
+                                        .getObject();
+
+                                    if (oResult && oResult.value === false) {
+
+                                        throw new Error(
+                                            "Backend returned false"
+                                        );
+
+                                    }
+
+                                    iSuccess++;
+
+                                } catch (oError) {
+
+                                    aFailed.push({
+                                        mtoModelCode: oRecord.mtoModelCode,
+                                        error: oError.message
+                                    });
+
+                                }
+
+                            }
+
+                            this._clearSelection();
+
+                            if (aFailed.length === 0) {
+
+                                MessageToast.show(
+                                    iSuccess +
+                                    " MTO Configuration(s) successfully " +
+                                    (sOperation === "approve"
+                                        ? "approved"
+                                        : "rejected")
+                                );
+
+                            } else {
+
+                                MessageBox.warning(
+                                    iSuccess + " succeeded, " +
+                                    aFailed.length + " failed.\n\n" +
+                                    aFailed.map(function (oItem) {
+
+                                        return oItem.mtoModelCode +
+                                            ": " + oItem.error;
+
+                                    }).join("\n")
+                                );
+
+                            }
+
+                        } catch (oError) {
+
+                            MessageBox.error(
+                                oError.message || "Bulk operation failed"
+                            );
+
+                        } finally {
+
+                            oTable.setBusy(false);
+
+                            // Reload SUBMITTED configurations
+                            await this.loadData();
+
+                        }
+
+                    }.bind(this)
+                }
+            );
+
+        },
+
     });
 });

@@ -13,7 +13,8 @@ sap.ui.define([
 
         onInit: function () {
             this.getView().setModel(new JSONModel({
-                pendingCountText: "Loading..."
+                pendingCountText: "Loading...",
+                selectedCount: 0
             }), "rtoExpenseApprovalVM");
         },
 
@@ -31,8 +32,33 @@ sap.ui.define([
             );
         },
 
+
+        onSelectionChange: function () {
+
+            var oTable = this.byId("rtoExpenseApprovalTable");
+
+            this.getView()
+                .getModel("rtoExpenseApprovalVM")
+                .setProperty(
+                    "/selectedCount",
+                    oTable.getSelectedIndices().length
+                );
+
+        },
+
+        _clearSelection: function () {
+
+            this.byId("rtoExpenseApprovalTable").clearSelection();
+
+            this.getView()
+                .getModel("rtoExpenseApprovalVM")
+                .setProperty("/selectedCount", 0);
+
+        },
+
         /* ---------- search ---------- */
         onSearch: function () {
+            this._clearSelection();
             var sQuery = this.byId("rtoExpenseApprovalSearchField").getValue().trim();
             var sField = this.byId("rtoExpenseApprovalFieldFilterSelect").getSelectedKey();
             var oBinding = this.byId("rtoExpenseApprovalTable").getBinding("rows");
@@ -57,62 +83,220 @@ sap.ui.define([
         },
 
         onRefresh: function () {
+            this._clearSelection();
             this.byId("rtoExpenseApprovalTable").getBinding("rows").refresh();
         },
 
         /* ---------- approve / reject via actions ---------- */
-        onApprove: function (oEvent) {
-            this._confirmAndCallAction(
-                oEvent,
+
+        onApproveSelected: function () {
+
+            this._processSelectedRTOExpense(
                 "approveMaster",
-                "Do you want to approve this RTO expense record?",
-                "approved"
+                "approve"
             );
+
         },
 
-        onReject: function (oEvent) {
-            this._confirmAndCallAction(
-                oEvent,
+        onRejectSelected: function () {
+
+            this._processSelectedRTOExpense(
                 "rejectMaster",
-                "Do you want to reject this RTO expense record?",
-                "rejected"
+                "reject"
             );
+
         },
 
-        _confirmAndCallAction: function (oEvent, sActionName, sText, sDoneText) {
-            var oCtx = oEvent.getSource().getBindingContext();
-            var oModel = this.getView().getModel();
+        _processSelectedRTOExpense: async function (sAction, sOperation) {
+
             var oTable = this.byId("rtoExpenseApprovalTable");
+            var oModel = this.getView().getModel();
+            var aIndices = oTable.getSelectedIndices();
 
-            MessageBox.confirm(sText, {
-                title: "Confirm",
-                actions: [MessageBox.Action.YES, MessageBox.Action.NO],
-                emphasizedAction: MessageBox.Action.YES,
-                onClose: function (sAction) {
-                    if (sAction !== MessageBox.Action.YES) { return; }
+            if (!aIndices.length) {
 
-                    oCtx.requestProperty("id").then(function (sId) {
-                        var oAction = oModel.bindContext("/" + sActionName + "(...)");
+                MessageToast.show(
+                    "Please select at least one RTO Expense record"
+                );
 
-                        oAction.setParameter("entityName", "RTOExpense");
-                        oAction.setParameter("recordKey", JSON.stringify({ id: sId }));
+                return;
+            }
 
-                        return oAction.execute("$direct").then(function () {
-                            return oAction.getBoundContext().getObject();
-                        });
-                    }).then(function (oResult) {
-                        if (oResult && oResult.value === false) {
-                            MessageBox.error("The record could not be " + sDoneText + ".");
+            var aContexts = aIndices.map(function (iIndex) {
+                return oTable.getContextByIndex(iIndex);
+            });
+
+            if (aContexts.some(function (oContext) {
+                return !oContext;
+            })) {
+
+                MessageBox.warning(
+                    "Some selected records are still loading. Please try again."
+                );
+
+                return;
+            }
+
+            // Capture IDs before executing backend actions
+            var aRecords;
+
+            try {
+
+                aRecords = await Promise.all(
+                    aContexts.map(async function (oContext) {
+
+                        return {
+                            id: await oContext.requestProperty("id")
+                        };
+
+                    })
+                );
+
+            } catch (oError) {
+
+                MessageBox.error(
+                    "Unable to read selected records: " + oError.message
+                );
+
+                return;
+            }
+
+            if (aRecords.some(function (oRecord) {
+                return oRecord.id === null ||
+                    oRecord.id === undefined ||
+                    oRecord.id === "";
+            })) {
+
+                MessageBox.error(
+                    "Record ID is missing for one or more selected records."
+                );
+
+                return;
+            }
+
+            MessageBox.confirm(
+                "Are you sure you want to " +
+                sOperation + " " +
+                aRecords.length + " selected RTO Expense record(s)?",
+                {
+                    title: sOperation === "approve"
+                        ? "Confirm Approval"
+                        : "Confirm Rejection",
+
+                    actions: [
+                        MessageBox.Action.YES,
+                        MessageBox.Action.NO
+                    ],
+
+                    emphasizedAction: MessageBox.Action.YES,
+
+                    onClose: async function (sResult) {
+
+                        if (sResult !== MessageBox.Action.YES) {
                             return;
                         }
-                        MessageToast.show("Record " + sDoneText);
-                        // refresh keeps the SUBMITTED filter, so the row leaves the list
-                        oTable.getBinding("rows").refresh();
-                    }).catch(function (oErr) {
-                        MessageBox.error(oErr.message);
-                    });
+
+                        var iSuccess = 0;
+                        var aFailed = [];
+
+                        oTable.setBusy(true);
+
+                        try {
+
+                            for (const oRecord of aRecords) {
+
+                                try {
+
+                                    var oAction = oModel.bindContext(
+                                        "/" + sAction + "(...)"
+                                    );
+
+                                    oAction.setParameter(
+                                        "entityName",
+                                        "RTOExpense"
+                                    );
+
+                                    oAction.setParameter(
+                                        "recordKey",
+                                        JSON.stringify({
+                                            id: oRecord.id
+                                        })
+                                    );
+
+                                    // Retain existing direct execution
+                                    await oAction.execute("$direct");
+
+                                    var oResult = oAction
+                                        .getBoundContext()
+                                        .getObject();
+
+                                    if (oResult && oResult.value === false) {
+                                        throw new Error("Backend returned false");
+                                    }
+
+                                    iSuccess++;
+
+                                } catch (oError) {
+
+                                    aFailed.push({
+                                        id: oRecord.id,
+                                        error: oError.message
+                                    });
+
+                                }
+
+                            }
+
+                            this._clearSelection();
+
+                            // Approved/rejected records leave the SUBMITTED list
+                            var oBinding = oTable.getBinding("rows");
+
+                            if (oBinding) {
+                                oBinding.refresh();
+                            }
+
+                            if (aFailed.length === 0) {
+
+                                MessageToast.show(
+                                    iSuccess +
+                                    " RTO Expense record(s) successfully " +
+                                    (sOperation === "approve"
+                                        ? "approved"
+                                        : "rejected")
+                                );
+
+                            } else {
+
+                                MessageBox.warning(
+                                    iSuccess + " succeeded, " +
+                                    aFailed.length + " failed.\n\n" +
+                                    aFailed.map(function (oItem) {
+
+                                        return oItem.id + ": " + oItem.error;
+
+                                    }).join("\n")
+                                );
+
+                            }
+
+                        } catch (oError) {
+
+                            MessageBox.error(
+                                oError.message || "Bulk operation failed"
+                            );
+
+                        } finally {
+
+                            oTable.setBusy(false);
+
+                        }
+
+                    }.bind(this)
                 }
-            });
-        }
+            );
+
+        },
+
     });
 });

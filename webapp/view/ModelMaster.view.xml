@@ -83,6 +83,22 @@
                     <ToolbarSpacer id="toolspacer"/>
 
                     <Button
+                        id="approveSelectedButton"
+                        text="Approve"
+                        icon="sap-icon://accept"
+                        type="Accept"
+                        enabled="{= ${selection>/count} > 0 }"
+                        press=".onApproveSelected"/>
+
+                    <Button
+                        id="rejectSelectedButton"
+                        text="Reject"
+                        icon="sap-icon://decline"
+                        type="Reject"
+                        enabled="{= ${selection>/count} > 0 }"
+                        press=".onRejectSelected"/>
+
+                    <Button
                         id="refreshButton"
                         text="Refresh"
                         icon="sap-icon://refresh"
@@ -103,7 +119,9 @@
                 <t:Table
                     id="model"
                     width="100%"
-                    selectionMode="None"
+                    selectionMode="MultiToggle"
+                    selectionBehavior="RowSelector"
+                    rowSelectionChange=".onSelectionChange"
                     enableColumnReordering="true"
                     rowsUpdated=".onRowsUpdated"
 
@@ -222,38 +240,6 @@
                                     id="approvalStatusObjectStatus"
                                     text="{path: 'approvalStatus', formatter: '.formatStatusText'}"
                                     state="{path: 'approvalStatus', formatter: '.formatStatusState'}"/>
-                            </t:template>
-                        </t:Column>
-
-                        <t:Column
-                            id="actionsColumn"
-                            width="17rem"
-                            hAlign="Center">
-                            <Label id="actionsLabel" text="Actions"/>
-                            <t:template>
-                                <HBox
-                                    id="actionsBox"
-                                    alignItems="Center"
-                                    justifyContent="Center">
-
-                                    <Button
-                                        id="approveButton"
-                                        text="Approve"
-                                        icon="sap-icon://accept"
-                                        type="Accept"
-                                        class="sapUiTinyMarginEnd"
-                                        enabled="{= ${approvalStatus} === 'SUBMITTED' }"
-                                        press=".onApprove"/>
-
-                                    <Button
-                                        id="rejectButton"
-                                        text="Reject"
-                                        icon="sap-icon://decline"
-                                        type="Reject"
-                                        enabled="{= ${approvalStatus} === 'SUBMITTED' }"
-                                        press=".onReject"/>
-
-                                </HBox>
                             </t:template>
                         </t:Column>
 

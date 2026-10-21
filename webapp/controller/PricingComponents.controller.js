@@ -5,14 +5,16 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/m/MessageToast",
-    "sap/m/MessageBox"
+    "sap/m/MessageBox",
+    "sap/ui/model/FilterType",
 ], function (
     Controller,
     JSONModel,
     Filter,
     FilterOperator,
     MessageToast,
-    MessageBox
+    MessageBox,
+    FilterType
 ) {
     "use strict";
 
@@ -23,7 +25,8 @@ sap.ui.define([
 
             var oViewModel = new JSONModel({
 
-                pendingCountText: "Loading pending records..."
+                pendingCountText: "Loading pending records...",
+                selectedCount: 0
 
             });
 
@@ -65,6 +68,8 @@ sap.ui.define([
         },
 
         onSearch: function () {
+
+            this._clearSelection();
 
             var sQuery = this.byId(
                 "pricingCompApprovalSearchField"
@@ -152,6 +157,7 @@ sap.ui.define([
         },
 
         onRefresh: function () {
+            this._clearSelection();
 
             var oTable = this.byId(
                 "pricingCompApprovalTable"
@@ -171,190 +177,212 @@ sap.ui.define([
 
         },
 
-        onApprove: function (oEvent) {
 
-            var oContext = oEvent.getSource().getBindingContext();
-
-            if (!oContext) {
-                MessageBox.error("Unable to identify selected Pricing Component.");
-                return;
-            }
-
-            var sRegionCode = oContext.getProperty("regionCode");
-            var sEngineType = oContext.getProperty("engineType");
-
-            MessageBox.confirm(
-                "Are you sure you want to approve pricing components for " +
-                sRegionCode + " (" + sEngineType + ")?",
-                {
-                    title: "Confirm Approval",
-
-                    actions: [
-                        MessageBox.Action.YES,
-                        MessageBox.Action.NO
-                    ],
-
-                    emphasizedAction: MessageBox.Action.YES,
-
-                    onClose: function (sAction) {
-
-                        if (sAction === MessageBox.Action.YES) {
-
-                            this._updateApprovalStatus(
-                                oEvent,
-                                "approveMaster",
-                                "approve"
-                            );
-
-                        }
-
-                    }.bind(this)
-                }
-            );
-
-        },
-
-        onReject: function (oEvent) {
-
-            var oContext = oEvent.getSource().getBindingContext();
-
-            if (!oContext) {
-                MessageBox.error("Unable to identify selected Pricing Component.");
-                return;
-            }
-
-            var sRegionCode = oContext.getProperty("regionCode");
-            var sEngineType = oContext.getProperty("engineType");
-
-            MessageBox.confirm(
-                "Are you sure you want to reject pricing components for " +
-                sRegionCode + " (" + sEngineType + ")?",
-                {
-                    title: "Confirm Rejection",
-
-                    actions: [
-                        MessageBox.Action.YES,
-                        MessageBox.Action.NO
-                    ],
-
-                    emphasizedAction: MessageBox.Action.NO,
-
-                    onClose: function (sAction) {
-
-                        if (sAction === MessageBox.Action.YES) {
-
-                            this._updateApprovalStatus(
-                                oEvent,
-                                "rejectMaster",
-                                "reject"
-                            );
-
-                        }
-
-                    }.bind(this)
-                }
-            );
-
-        },
-        // ==========================================
-        // COMMON APPROVE / REJECT BACKEND CALL
-        // ==========================================
-
-        _updateApprovalStatus: async function (
-            oEvent,
-            sAction,
-            sOperation
-        ) {
-
-            var oButton = oEvent.getSource();
-
-            var oContext = oButton.getBindingContext();
-
-            if (!oContext) {
-                MessageBox.error("Unable to identify selected Pricing Component.");
-                return;
-            }
-
-            var sRegionCode = oContext.getProperty("regionCode");
-            var sEngineType = oContext.getProperty("engineType");
-
-            var oModel = oContext.getModel();
+        onSelectionChange: function () {
 
             var oTable = this.byId("pricingCompApprovalTable");
 
-            try {
-
-                oButton.setEnabled(false);
-
-                // Bind common unbound CAP action
-                var oAction = oModel.bindContext(
-                    "/" + sAction + "(...)"
+            this.getView()
+                .getModel("pricingCompApprovalVM")
+                .setProperty(
+                    "/selectedCount",
+                    oTable.getSelectedIndices().length
                 );
+        },
 
-                // Entity name
-                oAction.setParameter(
-                    "entityName",
-                    "PricingComponents"
-                );
+        _clearSelection: function () {
 
-                // Composite primary key
-                oAction.setParameter(
-                    "recordKey",
-                    JSON.stringify({
-                        regionCode: sRegionCode,
-                        engineType: sEngineType
-                    })
-                );
+            this.byId("pricingCompApprovalTable").clearSelection();
 
-                // Execute CAP action
-                await oAction.execute();
+            this.getView()
+                .getModel("pricingCompApprovalVM")
+                .setProperty("/selectedCount", 0);
 
-                // Read action response
-                var oResult = await oAction
-                    .getBoundContext()
-                    .requestObject();
+        },
 
-                if (oResult && oResult.value === false) {
-                    throw new Error(
-                        "Unable to " + sOperation + " Pricing Components."
+onApproveSelected: function () {
+    this._processSelectedPricingComponents(
+        "approveMaster",
+        "approve"
+    );
+},
+
+onRejectSelected: function () {
+    this._processSelectedPricingComponents(
+        "rejectMaster",
+        "reject"
+    );
+},
+
+_processSelectedPricingComponents: function (sAction, sOperation) {
+
+    var oTable = this.byId("pricingCompApprovalTable");
+    var oModel = this.getView().getModel();
+    var aIndices = oTable.getSelectedIndices();
+
+    if (!aIndices.length) {
+        MessageToast.show("Please select at least one Pricing Component");
+        return;
+    }
+
+    var aContexts = aIndices.map(function (iIndex) {
+        return oTable.getContextByIndex(iIndex);
+    });
+
+    if (aContexts.some(function (oContext) {
+        return !oContext;
+    })) {
+        MessageBox.warning(
+            "Some selected records are still loading. Please try again."
+        );
+        return;
+    }
+
+    // Composite primary key: regionCode + engineType
+    var aRecords = aContexts.map(function (oContext) {
+        return {
+            regionCode: oContext.getProperty("regionCode"),
+            engineType: oContext.getProperty("engineType")
+        };
+    });
+
+    if (aRecords.some(function (oRecord) {
+        return !oRecord.regionCode || !oRecord.engineType;
+    })) {
+        MessageBox.error(
+            "Region Code or Engine Type is missing for a selected record."
+        );
+        return;
+    }
+
+    MessageBox.confirm(
+        "Are you sure you want to " +
+        sOperation + " " +
+        aRecords.length + " selected Pricing Component(s)?",
+        {
+            title: sOperation === "approve"
+                ? "Confirm Approval"
+                : "Confirm Rejection",
+
+            actions: [
+                MessageBox.Action.YES,
+                MessageBox.Action.NO
+            ],
+
+            emphasizedAction: sOperation === "approve"
+                ? MessageBox.Action.YES
+                : MessageBox.Action.NO,
+
+            onClose: async function (sResult) {
+
+                if (sResult !== MessageBox.Action.YES) {
+                    return;
+                }
+
+                var iSuccess = 0;
+                var aFailed = [];
+
+                oTable.setBusy(true);
+
+                try {
+
+                    // One backend action call per selected record
+                    for (const oRecord of aRecords) {
+
+                        try {
+
+                            var oAction = oModel.bindContext(
+                                "/" + sAction + "(...)"
+                            );
+
+                            oAction.setParameter(
+                                "entityName",
+                                "PricingComponents"
+                            );
+
+                            oAction.setParameter(
+                                "recordKey",
+                                JSON.stringify({
+                                    regionCode: oRecord.regionCode,
+                                    engineType: oRecord.engineType
+                                })
+                            );
+
+                            await oAction.execute();
+
+                            // Check Boolean response from CAP
+                            var oResult = await oAction
+                                .getBoundContext()
+                                .requestObject();
+
+                            if (oResult && oResult.value === false) {
+                                throw new Error("Backend returned false");
+                            }
+
+                            iSuccess++;
+
+                        } catch (oError) {
+
+                            aFailed.push({
+                                regionCode: oRecord.regionCode,
+                                engineType: oRecord.engineType,
+                                error: oError.message
+                            });
+
+                        }
+
+                    }
+
+                    this._clearSelection();
+
+                    // Refresh SUBMITTED records
+                    var oBinding = oTable.getBinding("rows");
+
+                    if (oBinding) {
+                        oBinding.refresh();
+                    }
+
+                    if (aFailed.length === 0) {
+
+                        MessageToast.show(
+                            iSuccess +
+                            " Pricing Component(s) successfully " +
+                            (sOperation === "approve"
+                                ? "approved"
+                                : "rejected")
+                        );
+
+                    } else {
+
+                        MessageBox.warning(
+                            iSuccess + " succeeded, " +
+                            aFailed.length + " failed.\n\n" +
+                            aFailed.map(function (oItem) {
+                                return oItem.regionCode +
+                                    " (" + oItem.engineType + "): " +
+                                    oItem.error;
+                            }).join("\n")
+                        );
+
+                    }
+
+                } catch (oError) {
+
+                    MessageBox.error(
+                        oError.message || "Bulk operation failed"
                     );
+
+                } finally {
+
+                    oTable.setBusy(false);
+
                 }
 
-                MessageToast.show(
-                    "Pricing Components for " +
-                    sRegionCode + " (" + sEngineType + ") " +
-                    (sOperation === "approve"
-                        ? "approved"
-                        : "rejected") +
-                    " successfully"
-                );
-
-                // Refresh table after successful action
-                var oBinding = oTable.getBinding("rows");
-
-                if (oBinding) {
-                    oBinding.refresh();
-                }
-
-            } catch (oError) {
-
-                console.error(
-                    "Pricing Components " + sOperation + " failed:",
-                    oError
-                );
-
-                MessageBox.error(
-                    oError.message ||
-                    "Unable to " + sOperation + " Pricing Components."
-                );
-
-            } finally {
-
-                oButton.setEnabled(true);
-
-            }
-
+            }.bind(this)
         }
+    );
+},
+
 
     });
 

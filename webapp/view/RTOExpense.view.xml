@@ -81,6 +81,22 @@
                     <ToolbarSpacer id="rtoExpenseApprovalToolbarSpacer"/>
 
                     <Button
+                        id="rtoExpenseApproveSelectedButton"
+                        text="Approve"
+                        icon="sap-icon://accept"
+                        type="Accept"
+                        enabled="{= ${rtoExpenseApprovalVM>/selectedCount} > 0 }"
+                        press=".onApproveSelected"/>
+
+                    <Button
+                        id="rtoExpenseRejectSelectedButton"
+                        text="Reject"
+                        icon="sap-icon://decline"
+                        type="Reject"
+                        enabled="{= ${rtoExpenseApprovalVM>/selectedCount} > 0 }"
+                        press=".onRejectSelected"/>
+
+                    <Button
                         id="rtoExpenseApprovalRefreshButton"
                         text="Refresh"
                         icon="sap-icon://refresh"
@@ -102,7 +118,9 @@
                     id="rtoExpenseApprovalTable"
                     width="100%"
                     visibleRowCount="10"
-                    selectionMode="None"
+                    selectionMode="MultiToggle"
+                    selectionBehavior="RowSelector"
+                    rowSelectionChange=".onSelectionChange"
                     enableColumnReordering="true"
                     rowsUpdated=".onRowsUpdated"
 

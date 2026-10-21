@@ -13,7 +13,9 @@ sap.ui.define([
 
         onInit: function () {
             this.getView().setModel(new JSONModel({
-                pendingCountText: "Loading..."
+                pendingCountText: "Loading...",
+                selectedCount: 0
+
             }), "rtoApprovalVM");
         },
 
@@ -36,7 +38,32 @@ sap.ui.define([
             return String(parseFloat((parseFloat(v) * 100).toFixed(2)));
         },
 
+        onSelectionChange: function () {
+
+            var oTable = this.byId("rtoApprovalTable");
+
+            this.getView()
+                .getModel("rtoApprovalVM")
+                .setProperty(
+                    "/selectedCount",
+                    oTable.getSelectedIndices().length
+                );
+
+        },
+
+        _clearSelection: function () {
+
+            this.byId("rtoApprovalTable").clearSelection();
+
+            this.getView()
+                .getModel("rtoApprovalVM")
+                .setProperty("/selectedCount", 0);
+
+        },
+
+
         onSearch: function () {
+            this._clearSelection();
             var sQuery = this.byId("rtoApprovalSearchField").getValue().trim();
             var sField = this.byId("rtoApprovalFieldFilterSelect").getSelectedKey();
             var oBinding = this.byId("rtoApprovalTable").getBinding("rows");
@@ -59,51 +86,212 @@ sap.ui.define([
         },
 
         onRefresh: function () {
+            this._clearSelection();
             this.byId("rtoApprovalTable").getBinding("rows").refresh();
         },
 
-        onApprove: function (oEvent) {
-            this._confirmAndCallAction(oEvent, "approveMaster",
-                "Do you want to approve this RTO record?", "approved");
+        onApproveSelected: function () {
+
+            this._processSelectedRTO(
+                "approveMaster",
+                "approve"
+            );
+
         },
 
-        onReject: function (oEvent) {
-            this._confirmAndCallAction(oEvent, "rejectMaster",
-                "Do you want to reject this RTO record?", "rejected");
+        onRejectSelected: function () {
+
+            this._processSelectedRTO(
+                "rejectMaster",
+                "reject"
+            );
+
         },
 
-        _confirmAndCallAction: function (oEvent, sActionName, sText, sDoneText) {
-            var oCtx = oEvent.getSource().getBindingContext();
-            var oModel = this.getView().getModel();
+        _processSelectedRTO: async function (sAction, sOperation) {
+
             var oTable = this.byId("rtoApprovalTable");
+            var oModel = this.getView().getModel();
+            var aIndices = oTable.getSelectedIndices();
 
-            MessageBox.confirm(sText, {
-                title: "Confirm",
-                actions: [MessageBox.Action.YES, MessageBox.Action.NO],
-                emphasizedAction: MessageBox.Action.YES,
-                onClose: function (sAction) {
-                    if (sAction !== MessageBox.Action.YES) { return; }
+            if (!aIndices.length) {
+                MessageToast.show("Please select at least one RTO record");
+                return;
+            }
 
-                    oCtx.requestProperty("id").then(function (sId) {
-                        var oAction = oModel.bindContext("/" + sActionName + "(...)");
-                        oAction.setParameter("entityName", "RTOMasters");
-                        oAction.setParameter("recordKey", JSON.stringify({ id: sId }));
+            var aContexts = aIndices.map(function (iIndex) {
+                return oTable.getContextByIndex(iIndex);
+            });
 
-                        return oAction.execute("$direct").then(function () {
-                            return oAction.getBoundContext().getObject();
-                        });
-                    }).then(function (oResult) {
-                        if (oResult && oResult.value === false) {
-                            MessageBox.error("The record could not be " + sDoneText + ".");
+            if (aContexts.some(function (oContext) {
+                return !oContext;
+            })) {
+                MessageBox.warning(
+                    "Some selected records are still loading. Please try again."
+                );
+                return;
+            }
+
+            // Read primary keys before processing
+            var aRecords;
+
+            try {
+
+                aRecords = await Promise.all(
+                    aContexts.map(async function (oContext) {
+
+                        return {
+                            id: await oContext.requestProperty("id")
+                        };
+
+                    })
+                );
+
+            } catch (oError) {
+
+                MessageBox.error(
+                    "Unable to read selected RTO records: " + oError.message
+                );
+
+                return;
+            }
+
+            if (aRecords.some(function (oRecord) {
+                return oRecord.id === null ||
+                    oRecord.id === undefined ||
+                    oRecord.id === "";
+            })) {
+
+                MessageBox.error(
+                    "Record ID is missing for one or more selected RTO records."
+                );
+
+                return;
+            }
+
+            MessageBox.confirm(
+                "Are you sure you want to " +
+                sOperation + " " +
+                aRecords.length + " selected RTO record(s)?",
+                {
+                    title: sOperation === "approve"
+                        ? "Confirm Approval"
+                        : "Confirm Rejection",
+
+                    actions: [
+                        MessageBox.Action.YES,
+                        MessageBox.Action.NO
+                    ],
+
+                    emphasizedAction: MessageBox.Action.YES,
+
+                    onClose: async function (sResult) {
+
+                        if (sResult !== MessageBox.Action.YES) {
                             return;
                         }
-                        MessageToast.show("Record " + sDoneText);
-                        oTable.getBinding("rows").refresh();
-                    }).catch(function (oErr) {
-                        MessageBox.error(oErr.message);
-                    });
+
+                        var iSuccess = 0;
+                        var aFailed = [];
+
+                        oTable.setBusy(true);
+
+                        try {
+
+                            for (const oRecord of aRecords) {
+
+                                try {
+
+                                    var oAction = oModel.bindContext(
+                                        "/" + sAction + "(...)"
+                                    );
+
+                                    oAction.setParameter(
+                                        "entityName",
+                                        "RTOMasters"
+                                    );
+
+                                    oAction.setParameter(
+                                        "recordKey",
+                                        JSON.stringify({
+                                            id: oRecord.id
+                                        })
+                                    );
+
+                                    // Retain existing direct execution
+                                    await oAction.execute("$direct");
+
+                                    var oResult = oAction
+                                        .getBoundContext()
+                                        .getObject();
+
+                                    if (oResult && oResult.value === false) {
+                                        throw new Error("Backend returned false");
+                                    }
+
+                                    iSuccess++;
+
+                                } catch (oError) {
+
+                                    aFailed.push({
+                                        id: oRecord.id,
+                                        error: oError.message
+                                    });
+
+                                }
+
+                            }
+
+                            this._clearSelection();
+
+                            var oBinding = oTable.getBinding("rows");
+
+                            if (oBinding) {
+                                oBinding.refresh();
+                            }
+
+                            if (aFailed.length === 0) {
+
+                                MessageToast.show(
+                                    iSuccess +
+                                    " RTO record(s) successfully " +
+                                    (sOperation === "approve"
+                                        ? "approved"
+                                        : "rejected")
+                                );
+
+                            } else {
+
+                                MessageBox.warning(
+                                    iSuccess + " succeeded, " +
+                                    aFailed.length + " failed.\n\n" +
+                                    aFailed.map(function (oItem) {
+
+                                        return oItem.id + ": " + oItem.error;
+
+                                    }).join("\n")
+                                );
+
+                            }
+
+                        } catch (oError) {
+
+                            MessageBox.error(
+                                oError.message || "Bulk operation failed"
+                            );
+
+                        } finally {
+
+                            oTable.setBusy(false);
+
+                        }
+
+                    }.bind(this)
                 }
-            });
-        }
+            );
+
+        },
+
+
     });
 });

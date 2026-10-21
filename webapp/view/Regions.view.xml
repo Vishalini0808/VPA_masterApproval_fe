@@ -100,6 +100,22 @@
                     <ToolbarSpacer id="regionApprovalToolbarSpacer"/>
 
                     <Button
+                        id="regionApproveSelectedButton"
+                        text="Approve"
+                        icon="sap-icon://accept"
+                        type="Accept"
+                        enabled="{= ${regionApprovalVM>/selectedCount} > 0 }"
+                        press=".onApproveSelected"/>
+
+                    <Button
+                        id="regionRejectSelectedButton"
+                        text="Reject"
+                        icon="sap-icon://decline"
+                        type="Reject"
+                        enabled="{= ${regionApprovalVM>/selectedCount} > 0 }"
+                        press=".onRejectSelected"/>
+
+                    <Button
                         id="regionApprovalRefreshButton"
                         text="Refresh"
                         icon="sap-icon://refresh"
@@ -121,7 +137,9 @@
                     id="regionApprovalTable"
                     width="100%"
                     visibleRowCount="10"
-                    selectionMode="None"
+                    selectionMode="MultiToggle"
+                    selectionBehavior="RowSelector"
+                    rowSelectionChange=".onSelectionChange"
                     enableColumnReordering="true"
                     rowsUpdated=".onRowsUpdated"
                     class="regionMasterTable"
@@ -215,47 +233,6 @@
                                     id="regionApprovalStatusObject"
                                     text="{status}"
                                     state="Warning"/>
-                            </table:template>
-
-                        </table:Column>
-
-                        <!-- ACTIONS -->
-
-                        <table:Column
-                            id="regionApprovalActionsColumn"
-                            width="16rem"
-                            hAlign="Center">
-
-                            <Label
-                                id="regionApprovalActionsLabel"
-                                text="Actions"/>
-
-                            <table:template>
-
-                                <HBox
-                                    id="regionApprovalActionsBox"
-                                    alignItems="Center"
-                                    justifyContent="Center">
-
-                                    <Button
-                                        id="regionApprovalApproveButton"
-                                        text="Approve"
-                                        icon="sap-icon://accept"
-                                        type="Accept"
-                                        class="sapUiTinyMarginEnd"
-                                        enabled="{= ${status} === 'SUBMITTED' }"
-                                        press=".onApprove"/>
-
-                                    <Button
-                                        id="regionApprovalRejectButton"
-                                        text="Reject"
-                                        icon="sap-icon://decline"
-                                        type="Reject"
-                                        enabled="{= ${status} === 'SUBMITTED' }"
-                                        press=".onReject"/>
-
-                                </HBox>
-
                             </table:template>
 
                         </table:Column>
