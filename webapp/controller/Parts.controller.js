@@ -14,7 +14,8 @@ sap.ui.define([
         onInit: function () {
             // view model: only holds the "N records pending for approval" text
             this.getView().setModel(new JSONModel({
-                pendingCountText: "Loading..."
+                pendingCountText: "Loading...",
+                selectedCount: 0
             }), "partsApprovalVM");
         },
 
@@ -32,8 +33,33 @@ sap.ui.define([
             );
         },
 
+
+        onSelectionChange: function () {
+
+            var oTable = this.byId("partsApprovalTable");
+
+            this.getView()
+                .getModel("partsApprovalVM")
+                .setProperty(
+                    "/selectedCount",
+                    oTable.getSelectedIndices().length
+                );
+
+        },
+
+        _clearSelection: function () {
+
+            this.byId("partsApprovalTable").clearSelection();
+
+            this.getView()
+                .getModel("partsApprovalVM")
+                .setProperty("/selectedCount", 0);
+
+        },
+
         /* ---------- search ---------- */
         onSearch: function () {
+            this._clearSelection();
             var sQuery = this.byId("partsApprovalSearchField").getValue().trim();
             var sField = this.byId("partsApprovalFieldFilterSelect").getSelectedKey();
             var oBinding = this.byId("partsApprovalTable").getBinding("rows");
@@ -57,66 +83,215 @@ sap.ui.define([
         },
 
         onRefresh: function () {
+            this._clearSelection();
             this.byId("partsApprovalTable").getBinding("rows").refresh();
         },
 
         /* ---------- approve / reject via actions ---------- */
-        onApprove: function (oEvent) {
-            this._confirmAndCallAction(
-                oEvent,
+
+        onApproveSelected: function () {
+
+            this._processSelectedParts(
                 "approveMaster",
-                "Do you want to approve this part?",
-                "approved"
+                "approve"
             );
+
         },
 
-        onReject: function (oEvent) {
-            this._confirmAndCallAction(
-                oEvent,
+        onRejectSelected: function () {
+
+            this._processSelectedParts(
                 "rejectMaster",
-                "Do you want to reject this part?",
-                "rejected"
+                "reject"
             );
+
         },
 
-        _confirmAndCallAction: function (oEvent, sActionName, sText, sDoneText) {
-            var oCtx = oEvent.getSource().getBindingContext();   // V4 context of this row
-            var oModel = this.getView().getModel();
+        _processSelectedParts: async function (sAction, sOperation) {
+
             var oTable = this.byId("partsApprovalTable");
+            var oModel = this.getView().getModel();
+            var aIndices = oTable.getSelectedIndices();
 
-            MessageBox.confirm(sText, {
-                title: "Confirm",
-                actions: [MessageBox.Action.YES, MessageBox.Action.NO],
-                emphasizedAction: MessageBox.Action.YES,
-                onClose: function (sAction) {
-                    if (sAction !== MessageBox.Action.YES) { return; }
+            if (!aIndices.length) {
 
-                    oCtx.requestProperty("partCode").then(function (sPartCode) {
-                        // unbound action: "/<ActionImportName>(...)"
-                        var oAction = oModel.bindContext("/" + sActionName + "(...)");
+                MessageToast.show("Please select at least one Part");
+                return;
 
-                        oAction.setParameter("entityName", "Parts");
-                        // recordKey is a JSON string: {"partCode":"<code>"}
-                        oAction.setParameter("recordKey", JSON.stringify({ partCode: sPartCode }));
+            }
 
-                        // "$direct" = sent immediately, no batch group to submit
-                        return oAction.execute("$direct").then(function () {
-                            return oAction.getBoundContext().getObject();
-                        });
-                    }).then(function (oResult) {
-                        // actions return Edm.Boolean -> { value: true/false }
-                        if (oResult && oResult.value === false) {
-                            MessageBox.error("The part could not be " + sDoneText + ".");
+            var aContexts = aIndices.map(function (iIndex) {
+                return oTable.getContextByIndex(iIndex);
+            });
+
+            if (aContexts.some(function (oContext) {
+                return !oContext;
+            })) {
+
+                MessageBox.warning(
+                    "Some selected records are still loading. Please try again."
+                );
+
+                return;
+            }
+
+            // Capture Part Codes before executing actions
+            var aRecords;
+
+            try {
+
+                aRecords = await Promise.all(
+                    aContexts.map(async function (oContext) {
+
+                        return {
+                            partCode: await oContext.requestProperty("partCode")
+                        };
+
+                    })
+                );
+
+            } catch (oError) {
+
+                MessageBox.error(
+                    "Unable to read selected Parts: " + oError.message
+                );
+
+                return;
+            }
+
+            if (aRecords.some(function (oRecord) {
+                return !oRecord.partCode;
+            })) {
+
+                MessageBox.error(
+                    "Part Code is missing for one or more selected records."
+                );
+
+                return;
+            }
+
+            MessageBox.confirm(
+                "Are you sure you want to " +
+                sOperation + " " +
+                aRecords.length + " selected Part(s)?",
+                {
+                    title: sOperation === "approve"
+                        ? "Confirm Approval"
+                        : "Confirm Rejection",
+
+                    actions: [
+                        MessageBox.Action.YES,
+                        MessageBox.Action.NO
+                    ],
+
+                    emphasizedAction: MessageBox.Action.YES,
+
+                    onClose: async function (sResult) {
+
+                        if (sResult !== MessageBox.Action.YES) {
                             return;
                         }
-                        MessageToast.show("Part " + sDoneText);
-                        // refresh keeps the SUBMITTED filter, so the row leaves the list
-                        oTable.getBinding("rows").refresh();
-                    }).catch(function (oErr) {
-                        MessageBox.error(oErr.message);
-                    });
+
+                        var iSuccess = 0;
+                        var aFailed = [];
+
+                        oTable.setBusy(true);
+
+                        try {
+
+                            for (const oRecord of aRecords) {
+
+                                try {
+
+                                    var oAction = oModel.bindContext(
+                                        "/" + sAction + "(...)"
+                                    );
+
+                                    oAction.setParameter(
+                                        "entityName",
+                                        "Parts"
+                                    );
+
+                                    oAction.setParameter(
+                                        "recordKey",
+                                        JSON.stringify({
+                                            partCode: oRecord.partCode
+                                        })
+                                    );
+
+                                    await oAction.execute("$direct");
+
+                                    var oResult = oAction
+                                        .getBoundContext()
+                                        .getObject();
+
+                                    if (oResult && oResult.value === false) {
+                                        throw new Error("Backend returned false");
+                                    }
+
+                                    iSuccess++;
+
+                                } catch (oError) {
+
+                                    aFailed.push({
+                                        partCode: oRecord.partCode,
+                                        error: oError.message
+                                    });
+
+                                }
+
+                            }
+
+                            this._clearSelection();
+
+                            var oBinding = oTable.getBinding("rows");
+
+                            if (oBinding) {
+                                oBinding.refresh();
+                            }
+
+                            if (aFailed.length === 0) {
+
+                                MessageToast.show(
+                                    iSuccess +
+                                    " Part(s) successfully " +
+                                    (sOperation === "approve"
+                                        ? "approved"
+                                        : "rejected")
+                                );
+
+                            } else {
+
+                                MessageBox.warning(
+                                    iSuccess + " succeeded, " +
+                                    aFailed.length + " failed.\n\n" +
+                                    aFailed.map(function (oItem) {
+
+                                        return oItem.partCode +
+                                            ": " + oItem.error;
+
+                                    }).join("\n")
+                                );
+
+                            }
+
+                        } catch (oError) {
+
+                            MessageBox.error(
+                                oError.message || "Bulk operation failed"
+                            );
+
+                        } finally {
+
+                            oTable.setBusy(false);
+
+                        }
+
+                    }.bind(this)
                 }
-            });
-        }
+            );
+
+        },
+
     });
 });

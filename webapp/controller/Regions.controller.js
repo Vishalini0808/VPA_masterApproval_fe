@@ -4,13 +4,17 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    "sap/m/MessageToast"
+    "sap/m/MessageToast",
+    "sap/ui/model/FilterType",
+    "sap/m/MessageBox"
 ], function (
     Controller,
     JSONModel,
     Filter,
     FilterOperator,
-    MessageToast
+    MessageToast,
+    FilterType,
+    MessageBox
 ) {
     "use strict";
 
@@ -20,7 +24,8 @@ sap.ui.define([
 
             var oViewModel = new JSONModel({
 
-                pendingCountText: "Loading pending records..."
+                pendingCountText: "Loading pending records...",
+                selectedCount: 0
 
             });
 
@@ -60,6 +65,8 @@ sap.ui.define([
         },
 
         onSearch: function () {
+
+            this._clearSelection();
 
             var sQuery = this.byId("regionApprovalSearchField")
                 .getValue()
@@ -151,6 +158,8 @@ sap.ui.define([
 
         onRefresh: function () {
 
+            this._clearSelection();
+
             var oTable = this.byId("regionApprovalTable");
 
             var oBinding = oTable.getBinding("rows");
@@ -165,196 +174,170 @@ sap.ui.define([
 
         },
 
-        onApprove: function (oEvent) {
-
-            var oContext = oEvent.getSource().getBindingContext();
-
-            if (!oContext) {
-                MessageBox.error("Unable to identify selected Region.");
-                return;
-            }
-
-            var sRegionCode = oContext.getProperty("regionCode");
-
-            MessageBox.confirm(
-                "Are you sure you want to approve Region " + sRegionCode + "?",
-                {
-                    title: "Confirm Approval",
-
-                    actions: [
-                        MessageBox.Action.YES,
-                        MessageBox.Action.NO
-                    ],
-
-                    emphasizedAction: MessageBox.Action.YES,
-
-                    onClose: function (sAction) {
-
-                        if (sAction === MessageBox.Action.YES) {
-
-                            this._updateApprovalStatus(
-                                oEvent,
-                                "approveMaster",
-                                "approve"
-                            );
-
-                        }
-
-                    }.bind(this)
-                }
-            );
-
-        },
-
-        onReject: function (oEvent) {
-
-            var oContext = oEvent.getSource().getBindingContext();
-
-            if (!oContext) {
-                MessageBox.error("Unable to identify selected Region.");
-                return;
-            }
-
-            var sRegionCode = oContext.getProperty("regionCode");
-
-            MessageBox.confirm(
-                "Are you sure you want to reject Region " + sRegionCode + "?",
-                {
-                    title: "Confirm Rejection",
-
-                    actions: [
-                        MessageBox.Action.YES,
-                        MessageBox.Action.NO
-                    ],
-
-                    emphasizedAction: MessageBox.Action.NO,
-
-                    onClose: function (sAction) {
-
-                        if (sAction === MessageBox.Action.YES) {
-
-                            this._updateApprovalStatus(
-                                oEvent,
-                                "rejectMaster",
-                                "reject"
-                            );
-
-                        }
-
-                    }.bind(this)
-                }
-            );
-
-        },
-
-        _updateApprovalStatus: async function (
-            oEvent,
-            sAction,
-            sOperation
-        ) {
-
-            var oButton = oEvent.getSource();
-
-            // Get selected row context
-            var oContext = oButton.getBindingContext();
-
-            if (!oContext) {
-
-                MessageBox.error(
-                    "Unable to identify selected Region."
-                );
-
-                return;
-            }
-
-            var oRegion = oContext.getObject();
-
-            var sRegionCode = oRegion.regionCode;
-
-            if (!sRegionCode) {
-
-                MessageBox.error(
-                    "Region Code is missing."
-                );
-
-                return;
-            }
-
-            var oModel = oContext.getModel();
+        onSelectionChange: function () {
 
             var oTable = this.byId("regionApprovalTable");
 
-            try {
-
-                oButton.setEnabled(false);
-
-                // Bind common unbound CAP action
-                var oAction = oModel.bindContext(
-                    "/" + sAction + "(...)"
+            this.getView()
+                .getModel("regionApprovalVM")
+                .setProperty(
+                    "/selectedCount",
+                    oTable.getSelectedIndices().length
                 );
+        },
 
-                // Set action parameters
-                oAction.setParameter(
-                    "entityName",
-                    "Regions"
-                );
+        _clearSelection: function () {
 
-                oAction.setParameter(
-                    "recordKey",
-                    JSON.stringify({
-                        regionCode: sRegionCode
-                    })
-                );
+            this.byId("regionApprovalTable").clearSelection();
 
-                // Execute action
-                await oAction.execute();
+            this.getView()
+                .getModel("regionApprovalVM")
+                .setProperty("/selectedCount", 0);
+        },
 
-                // Read Boolean result returned by CAP
-                var oResult = await oAction
-                    .getBoundContext()
-                    .requestObject();
+        onApproveSelected: function () {
+            this._processSelectedRegions("approveMaster", "approve");
+        },
 
-                if (oResult && oResult.value === false) {
-                    throw new Error(
-                        "The " + sOperation + " action was unsuccessful."
-                    );
-                }
+        onRejectSelected: function () {
+            this._processSelectedRegions("rejectMaster", "reject");
+        },
 
-                MessageToast.show(
-                    "Region " + sRegionCode +
-                    " " +
-                    (sOperation === "approve"
-                        ? "approved"
-                        : "rejected") +
-                    " successfully"
-                );
+        _processSelectedRegions: function (sAction, sOperation) {
 
-                // Refresh table
-                var oBinding = oTable.getBinding("rows");
+            var oTable = this.byId("regionApprovalTable");
+            var oModel = this.getView().getModel();
+            var aIndices = oTable.getSelectedIndices();
 
-                if (oBinding) {
-                    oBinding.refresh();
-                }
-
-            } catch (oError) {
-
-                console.error(
-                    "Region " + sOperation + " failed:",
-                    oError
-                );
-
-                MessageBox.error(
-                    oError.message ||
-                    "Unable to " + sOperation + " Region."
-                );
-
-            } finally {
-
-                oButton.setEnabled(true);
-
+            if (!aIndices.length) {
+                MessageToast.show("Please select at least one Region");
+                return;
             }
 
-        }
+            var aContexts = aIndices.map(function (iIndex) {
+                return oTable.getContextByIndex(iIndex);
+            });
+
+            if (aContexts.some(function (oContext) {
+                return !oContext;
+            })) {
+                MessageBox.warning("Some selected records are still loading.");
+                return;
+            }
+
+            var aRegionCodes = aContexts.map(function (oContext) {
+                return oContext.getProperty("regionCode");
+            });
+
+            if (aRegionCodes.some(function (sCode) {
+                return !sCode;
+            })) {
+                MessageBox.error("Region Code is missing.");
+                return;
+            }
+
+            MessageBox.confirm(
+                "Are you sure you want to " +
+                sOperation + " " +
+                aRegionCodes.length + " selected Region(s)?",
+                {
+                    title: "Confirm " + sOperation,
+
+                    onClose: async function (sResult) {
+
+                        if (sResult !== MessageBox.Action.OK) {
+                            return;
+                        }
+
+                        var iSuccess = 0;
+                        var aFailed = [];
+
+                        oTable.setBusy(true);
+
+                        try {
+
+                            for (const sRegionCode of aRegionCodes) {
+
+                                try {
+
+                                    var oAction = oModel.bindContext(
+                                        "/" + sAction + "(...)"
+                                    );
+
+                                    oAction.setParameter(
+                                        "entityName",
+                                        "Regions"
+                                    );
+
+                                    oAction.setParameter(
+                                        "recordKey",
+                                        JSON.stringify({
+                                            regionCode: sRegionCode
+                                        })
+                                    );
+
+                                    await oAction.execute();
+
+                                    var oResult = await oAction
+                                        .getBoundContext()
+                                        .requestObject();
+
+                                    if (oResult && oResult.value === false) {
+                                        throw new Error("Backend returned false");
+                                    }
+
+                                    iSuccess++;
+
+                                } catch (oError) {
+
+                                    aFailed.push({
+                                        regionCode: sRegionCode,
+                                        error: oError.message
+                                    });
+
+                                }
+                            }
+
+                            this._clearSelection();
+
+                            oTable.getBinding("rows").refresh();
+
+                            if (aFailed.length === 0) {
+
+                                MessageToast.show(
+                                    iSuccess + " Region(s) successfully " +
+                                    (sOperation === "approve"
+                                        ? "approved"
+                                        : "rejected")
+                                );
+
+                            } else {
+
+                                MessageBox.warning(
+                                    iSuccess + " succeeded, " +
+                                    aFailed.length + " failed.\n\n" +
+                                    aFailed.map(function (oItem) {
+                                        return oItem.regionCode +
+                                            ": " + oItem.error;
+                                    }).join("\n")
+                                );
+
+                            }
+
+                        } catch (oError) {
+
+                            MessageBox.error(oError.message);
+
+                        } finally {
+
+                            oTable.setBusy(false);
+
+                        }
+
+                    }.bind(this)
+                }
+            );
+        },
 
     });
 

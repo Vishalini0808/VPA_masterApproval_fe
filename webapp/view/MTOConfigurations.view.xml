@@ -33,7 +33,7 @@
 
                     <SearchField
                         id="mtoSearchField"
-                        width="300px"
+                        width="200px"
                         placeholder="Search by MTO Model Code or Reference Model..."
                         liveChange=".onSearch">
                         <layoutData>
@@ -73,6 +73,22 @@
                         press=".onCollapseAll"/>
 
                     <Button
+                        id="mtoApproveSelectedButton"
+                        text="Approve"
+                        icon="sap-icon://accept"
+                        type="Accept"
+                        enabled="{= ${tree>/selectedCount} > 0 }"
+                        press=".onApproveSelected"/>
+
+                    <Button
+                        id="mtoRejectSelectedButton"
+                        text="Reject"
+                        icon="sap-icon://decline"
+                        type="Reject"
+                        enabled="{= ${tree>/selectedCount} > 0 }"
+                        press=".onRejectSelected"/>
+
+                    <Button
                         id="mtoRefreshButton"
                         text="Refresh"
                         icon="sap-icon://refresh"
@@ -89,7 +105,9 @@
                 <t:TreeTable
                     id="mtoTreeTable"
                     width="100%"
-                    selectionMode="None"
+                    selectionMode="MultiToggle"
+                    selectionBehavior="RowSelector"
+                    rowSelectionChange=".onSelectionChange"
                     enableColumnReordering="true"
                     rows="{
                         path: 'tree>/nodes',

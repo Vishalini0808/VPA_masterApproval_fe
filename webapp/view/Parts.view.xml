@@ -80,6 +80,22 @@
 
                     <ToolbarSpacer id="partsApprovalToolbarSpacer"/>
 
+                     <Button
+                        id="partsApproveSelectedButton"
+                        text="Approve"
+                        icon="sap-icon://accept"
+                        type="Accept"
+                        enabled="{= ${partsApprovalVM>/selectedCount} > 0 }"
+                        press=".onApproveSelected"/>
+
+                    <Button
+                        id="partsRejectSelectedButton"
+                        text="Reject"
+                        icon="sap-icon://decline"
+                        type="Reject"
+                        enabled="{= ${partsApprovalVM>/selectedCount} > 0 }"
+                        press=".onRejectSelected"/>
+
                     <Button
                         id="partsApprovalRefreshButton"
                         text="Refresh"
@@ -102,7 +118,9 @@
                     id="partsApprovalTable"
                     width="100%"
                     visibleRowCount="10"
-                    selectionMode="None"
+                    selectionMode="MultiToggle"
+                    selectionBehavior="RowSelector"
+                    rowSelectionChange=".onSelectionChange"
                     enableColumnReordering="true"
                     rowsUpdated=".onRowsUpdated"
 
